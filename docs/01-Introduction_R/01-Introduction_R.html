@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Getting Started with Data and R
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+&lt;!--
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/01-Introduction/01-Introduction.html")
+--&gt;
+
+class: center, middle, frame
+
+# A Case Study
+
+---
+
+# Sarah the chimp
+
+.pull-left[
+- In 1978, researchers Premack and Woodruff published a study in *Science* magazine, reporting an experiment where an adult chimpanzee named Sarah was shown videotapes of eight different scenarios of a human being faced with a problem.
+
+- After each videotape showing, she was presented with two photographs, one of which depicted a possible solution to the problem.
+
+- Sarah could pick the photograph with the correct solution for seven of the eight problems!
+]
+
+.pull-right[
+![](chimp.jpeg)
+]
+
+---
+
+# How?!
+
+What are **two possible explanations** for Sarah getting 7 correct answers out of 8?
+
+--
+
+1. Sarah was just guessing and got lucky. 
+
+2. Sarah can do better than just guessing. 
+
+--
+
+**Which explanation do you think is better?**
+
+--
+
+- I think explanation (1) is better. How can you convince me that (1) is *not* the better explanation?
+
+---
+
+# Refuting Explanation (1)
+
+Let's try to look at what Sarah's results would be, **if she just guessed**. 
+
+- What is a simple way to *model* guessing between two choices?
+
+--
+.center[
+&lt;img src="coin_flip.png" width="25%" /&gt;
+]
+--
+
+Let's define "heads" as a *correct answer* and "tails" as an *incorrect answer*. 
+
+- If Sarah were just guessing ("flipping a coin"), what would be the **expected** number of correct guesses ("heads")?
+
+---
+
+# Simulating Guessing
+
+If Sarah were just guessing, we would *expect* the number of correct guesses to be 4. 
+
+- However, not every set of 8 coin tosses will result in 4 heads. 
+
+- Let's repeat the set of 8 coin tosses many times, to generate the pattern for correct answers that could happen in the long run, **under the assumption that Sarah is just guessing**. 
+
+--
+.center[
+&lt;img src="01-Introduction_R_files/figure-html/unnamed-chunk-3-1.png" width="45%" /&gt;
+]
+
+---
+
+# What do you notice?
+
+The **distribution** of the rate of correct answers, **under the assumption that Sarah was guessing**, is centered at 0.50 (50%, or 4 correct answers out of 8). 
+
+- The red line indicates the **observed proportion** of correct answers, 7 out of 8 (87.5%). 
+
+The majority of the distribution lies between 0.25 and 0.75. 
+
+- This means that, if Sarah were actually guessing, then it would be *highly unlikely* to observe 7 out of 8 correct answers. 
+
+- Thus, we are fairly convinced that Sarah is doing better than just guessing. 
+
+--
+
+**What if Sarah got 5 correct answers out of 8 instead?** Would we still be convinced of Sarah's ability to do better than guessing?
+
+---
+
+class: center, middle, frame
+
+# Course Introductions
+
+---
+
+# Who am I?
+
+[Anthony Scotina](https://scotinastats.rbind.io)
+
+- Email: [anthony.scotina@simmons.edu](anthony.scotina@simmons.edu)
+
+- Website: [https://scotinastats.rbind.io/](https://scotinastats.rbind.io/)
+
+- Graduated with a Ph.D. in [Biostatistics](https://www.brown.edu/academics/public-health/biostats/home) from Brown University in 2018
+
+- Second year as an Assistant Professor of Statistics
+
+- Hobbies include **R**, and that's it. I don't like anything else.  
+    
+---
+
+# Where are you?
+
+Statistical Design and Analysis!
+
+**Some information**
+
+Our textbooks:
+
+1. **ModernDive**: Statistical Inference via Data Science
+    - Webpage: [https://moderndive.com](https://moderndive.com)
+    - Cost: $0
+    
+2. **Learning Statistics with R**
+    - Webpage: [https://learningstatisticswithr.com/book/](https://learningstatisticswithr.com/book/)
+    - Cost: $0
+    
+3. **OpenIntro Statistics**
+    - Webpage: [https://www.openintro.org/stat/textbook.php?stat_book=os](https://www.openintro.org/stat/textbook.php?stat_book=os)
+    - Cost: $0
+    
+4. Other sources may be used throughout the semester.
+
+---
+
+# ModernDive 
+
+.center[
+&lt;img src="md_mobile.png" width="65%" /&gt;
+]
+
+---
+
+class: center, middle, frame
+
+# Getting Started
+
+---
+
+# More Case Studies
+
+**Smoking in Massachusetts by Education Level**
+
+*Adults who are current smokers*
+
+&lt;img src="case_study_smoke.png" width="50%" /&gt;
+
+---
+
+# More Case Studies
+
+**Smoking in Massachusetts by Education Level**
+
+**Research Question**
+In the population of all adult Americans, does the fraction that smoke vary significantly by level of education?
+
+**Statistical Issues**
+Can the observed difference in smoking rates be attributed to chance?
+
+**Scope of Inference**
+To what extent can we generalize the results of our analysis?
+
+---
+
+# More Case Studies
+
+**The Impact of an Influenza Vaccine on the Incidence of Upper Respiratory Illness**
+
+In 1994 researchers in Minnesota conducted a randomized, double-blind, placebo-controlled trial of vaccination against influenza in healthy, working adults. The results were published in the *New England Journal of Medicine*. 
+
+*Two variables*
+
+1. Number of upper respiratory illness (URI) episodes
+
+2. Group (placebo or vaccine)
+
+---
+
+# More Case Studies
+
+**The Impact of an Influenza Vaccine on the Incidence of Upper Respiratory Illness**
+
+**Research Question**
+For healthy Minnesotans, is there a significant causal relationship between the presence or absence of a influenza vaccine and the number of upper respiratory infections (and other response variables)?
+
+**Statistical Issues**
+What is the magnitude of the difference in the number of URIs between the placebo and the vaccine subjects?
+Can the observed difference be attributed to chance?
+
+**Scope of Inference**
+To what extent can we generalize the results of our analysis? Does our analysis establish a causal connection between the provision of an influenza vaccine and the number of URIs?
+
+---
+
+# Course Objectives
+
+These case studies are examples of **comparative studies**, where we want to make explicit the relationship between:
+- an **outcome/response** variable *y*, also called the **dependent variable**, and
+- an **explanatory** variable *x*, also called an **independent variable** or **covariate**
+
+--
+
+**Outcome/Response** variables: 
+- Number of upper respiratory illness (URI) episodes (*numerical*)
+- Smoking status (yes or no, *binary categorical*)
+
+**Explanatory** variables
+- Education level (*ordinal categorical*)
+- Vaccine status (yes or no, *binary categorical*)
+
+--
+
+The *type of outcome and explanatory variables* in a study change the type of statistical analysis we perform!
+
+---
+
+# Course Objectives
+
+In order to foster a conceptual understanding of statistics, use **real data** whenever possible.
+
+**How can we do this?**
+
+- Two engines:
+    1. Mathematics: formulas, approximations, probability theory, etc.
+    2. Computing: simulations, random number generating, etc.
+  
+
+- In *this* class:
+    - Less of (1)
+    - More of (2)
+
+---
+
+# The "Engine"
+
+.center[
+&lt;img src="rstudio.png" width="50%" /&gt;
+]
+
+---
+
+class: center, middle
+
+# Getting Started with Data and R
+
+---
+
+# First, let's install R and R Studio...
+
+*If you haven't already installed these...*
+
+**Installing R**
+
+- For Windows, click [HERE](https://cran.case.edu/bin/windows/base/R-4.0.2-win.exe).
+- For Mac, click [HERE](https://cran.case.edu/bin/macosx/R-4.0.2.pkg).
+
+--
+
+**Installing R Studio**
+
+- For Windows, click [HERE](https://download1.rstudio.org/desktop/windows/RStudio-1.3.1056.exe).
+- For Mac, click [HERE](https://download1.rstudio.org/desktop/macos/RStudio-1.3.1056.dmg). 
+
+---
+
+# Using R Studio
+
+1. Open **R Studio** (never open **R**). 
+
+2. In the menu bar at the top of your screen: **File** -- **New File** -- **New Script**
+
+.center[
+&lt;img src="r-window.png" width="75%" /&gt;
+]
+
+---
+
+# The R Studio Window
+
+.center[
+&lt;img src="r-window.png" width="50%" /&gt;
+]
+
+**The Four Panels**:
+
+1. **Console** (bottom-left): This is where you can perform simple calculations or run/execute commands. 
+    - Either type code directly into the console, or run from a the *editor*...
+2. **Editor** (top-left): This is where you can save and edit *R code* and *text* into a **script** or **R Markdown files**.
+    - Save all of your code in a script (.R) or R Markdown (.Rmd) files!!!
+3. **Files, Packages, Help, Plots** (bottom-right): See your files, packages, help screens, and plots (more in a few...).
+4. **Environment** (top-right): Your current workspace (more in a few...).
+
+---
+
+# Before we get started...
+
+Don't worry. This class does not require you to have experience with computer programming, nor is this a computer science class. 
+
+- "Should all statistics students be programmers? **No!**"
+
+- "Should all statistics students program? **Yes!**"
+    - Hadley Wickham, Chief Scientist at R Studio
+    
+--
+
+Learning R is almost like learning a **new language**. It's difficult, but *incredibly rewarding*. 
+
+- You will learn tools that *actual* statisticians and data scientists use in the **real world**!
+
+---
+
+# Basic Programming Concepts
+
+**Vectors**: a series of values, created using the `c()` command. 
+- Type
+    
+    ```r
+    c(10, 12, 13, 14, 13, 29)
+    ```
+
+    into the **console** (bottom-left) and press "Enter".
+- Type 
+    
+    ```r
+    c(10, 12, 13, 14, 13, 29)
+    ```
+
+    into your **script** (top-left) and click "Run" *while your cursor is on the same line*.
+    
+Think of `c()` as standing for "*concatenate*" or "*combine*".
+    
+---
+
+# Basic Programming Concepts
+
+- Type 
+    
+    ```r
+    c("A", "B", "C", "D", "E")
+    ```
+
+    into your **script** and click "Run".
+- Type 
+    
+    ```r
+    c(A, B, C, D, E)
+    ```
+
+    into your **script** and click "Run". What happened?
+    
+--
+
+Make sure any **character** variable (e.g., non-numerical) is surrounded by *quotation marks*! 
+
+--
+
+**Pro-tip**: Press [command] + [return] (Mac) while your cursor is on the same line as your code, and the line will run!
+
+---
+
+# Basic Programming Concepts
+
+**Functions**: take inputs (called *arguments*) and return *outputs*. 
+- Example: Type 
+    
+    ```r
+    mean(c(10, 12, 13, 14, 13, 29))
+    ```
+
+    into your **script** and click "Run". 
+    
+- Now run the following three lines:
+    
+    ```r
+    sd(c(10, 12, 13, 14, 13, 29))
+    ```
+    
+    ```r
+    median(c(10, 12, 13, 14, 13, 29))
+    ```
+    
+    ```r
+    summary(c(10, 12, 13, 14, 13, 29))
+    ```
+
+---
+
+# Basic Programming Concepts
+
+**Assignment**: Let's *assign* the vector `c(10, 12, 13, 14, 13, 29)` to a variable, so we don't have to keep typing it out. 
+- Type 
+    
+    ```r
+    enrollment = c(10, 12, 13, 14, 13, 29)
+    ```
+
+    and click "Run".
+    
+    - **Note**: The symbol `&lt;-` also works in place of `=`, so you can use *either* for assignment. 
+
+--
+
+- You might think nothing happened after that last example. But look to the **Environment** panel (top-right). 
+    - R Studio now recognizes the list of numbers as stored in an **object** called **enrollment**. 
+    - Type 
+        
+        ```r
+        mean(enrollment)
+        ```
+    
+        and click "Run".
+
+---
+
+# Arithmetic
+
+At its core, R Studio can act as a simple calculator:
+- `+` : addition
+- `-` : subtraction
+- `*` (shift + 8) : multiplication
+- `/` : division
+- `^` (shift + 6) : exponent
+
+--
+
+Run the following equations:
+- `2+2`
+- `753-342`
+- `359*315`
+- `118/21`
+- `5^3`
+- `8/2*(2+2)`
+- `8/(2*(2+2))`
+
+---
+
+# Tips on Learning to Code
+
+**Copy, paste, and tweak**
+
+- Rather than writing code from *scratch*, take existing code that *definitely works* and modify it to suit your needs. 
+
+--
+
+**Learn by doing**
+
+- Like a foreign language, the best way to learn to code is by *coding*! We will be coding in every class, and you will do some coding in all assignments and exams. 
+
+--
+
+**Practice makes perfect**
+
+- Practice!!!
+
+---
+
+# R Packages
+
+We will be using **R packages** extensively.
+- R is *open-source*, which means that members in the community can provide additional functions, data, or documentation in a *package*. 
+- Packages are *free* and can be easily downloaded. 
+
+--
+
+**Downloading packages in R Studio**
+
+- **Packages** tab (bottom-right) -- **Install** -- Type package name and press *Install*
+- Install the following packages (separate by a comma when typing the names):
+    - `mosaic`, `skimr`: packages for data analysis
+    - `tidyverse`: set of packages for data visualization and organization
+    - `moderndive`: package that accompanies one of the course textbooks
+    - `infer`: package for statistical inference
+    - `openintro`, `babynames`, `nycflights13`: packages with useful datasets
+    - `devtools`: helps with installing some independent packages
+    
+---
+
+# R Packages
+
+.center[
+&lt;img src="package-install.png" width="50%" /&gt;
+]
+
+**Note**: Once you install a package, you never have to again!
+
+- But, you have to *load* them every time you open R Studio. 
+- To load a package, use the `library` function. Run the following:
+
+```r
+library(tidyverse)
+library(nycflights13)
+```
+
+---
+
+# Using R Packages
+
+One of the most common **error messages** for new R users is some variant of the following:
+
+```
+Error: could not find function
+```
+
+Chances are, this is because you are using a function from a package **that hasn't been loaded**. 
+
+- *Always* load packages when you start R, before you do anything else!
+
+---
+
+# Data Frames
+
+**Data frames**:  analogous to rectangular spreadsheets you would see in Excel or Google Spreadsheets. 
+- Rows of a data frame correspond to *observations*, and columns correspond to *variables*. 
+
+---
+
+# `nycflights13` Package
+
+This package contains five data sets saved in five separate data frames with information about all domestic flights departing from New York City in 2013:
+
+1. `flights`: Information on all 336,776 flights
+2. `airlines`: A table matching airline names and their two letter IATA airline codes (also known as carrier codes) for 16 airline companies
+3. `planes`: Information about each of 3,322 physical aircrafts used.
+4. `weather`: Hourly meteorological data for each of the three NYC airports. 
+5. `airports`: Airport names, codes, and locations for 1,458 destination airports.
+
+---
+
+# `flights` Data Frame
+
+Run the following:
+
+
+
+
+```r
+flights
+```
+
+```
+# A tibble: 336,776 x 19
+    year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
+ 1  2013     1     1      517            515         2      830            819
+ 2  2013     1     1      533            529         4      850            830
+ 3  2013     1     1      542            540         2      923            850
+ 4  2013     1     1      544            545        -1     1004           1022
+ 5  2013     1     1      554            600        -6      812            837
+ 6  2013     1     1      554            558        -4      740            728
+ 7  2013     1     1      555            600        -5      913            854
+ 8  2013     1     1      557            600        -3      709            723
+ 9  2013     1     1      557            600        -3      838            846
+10  2013     1     1      558            600        -2      753            745
+# … with 336,766 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
+#   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
+#   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;
+```
+
+---
+
+# `flights` Data Frame
+
+A few notes on this dataset...
+
+- A "tibble" is a type of data frame in R. The `flights` data frame has:
+    - 336,776 **rows**
+    - 19 **columns**
+    
+- The 19 columns correspond to 19 different **variables**. Some of which are: *year*, *month*, *departure time*, *arrival time*, *carrier*, *origin*, etc.
+
+- By default, we are shown the first 10 rows, since the rest can't fit on the screen. 
+
+---
+
+# Exploring Data Frames
+
+There are many ways to explore a data frame besides what we just accomplished. One of which is through the `View` function. 
+- Run the following:
+
+```r
+View(flights)
+```
+
+- **Note**: R is *case sensitive*. So make sure you use an uppercase "V" in `View`, rather than `view`. 
+
+---
+
+# Exploring Variables
+
+The `$` operator allows us to explore a single variable within a data frame. For example, run the following in your console:
+
+```r
+airlines
+```
+
+
+```r
+airlines$name
+```
+
+
+```r
+airlines$carrier
+```
+
+- The `$` extracts only the `name` variable from the `airlines` data frame and returns it as a **vector**. 
+
+---
+
+# Exploring Variables
+
+We can use the `$` operator to calculate descriptive statistics for variables within a dataset:
+
+
+```r
+mean(flights$distance)
+```
+
+```
+[1] 1039.913
+```
+
+--
+
+We can also use the `mosaic` R package to code this slightly differently:
+
+
+```r
+library(mosaic)
+mean( ~ distance, data = flights)
+```
+
+```
+[1] 1039.913
+```
+
+---
+
+# Help Files
+
+You can get help in R by entering a `?` before the name of a function or data frame, and a page will appear in the bottom-right panel. 
+- Try the following:
+
+```r
+?flights
+```
+
+I use the help files **all the time**, and you should too, especially if you're stuck with a specific function!
+
+---
+
+class: center, middle
+
+# Importing Datasets
+
+---
+
+# Importing Datasets
+
+The `flights` dataset was included in the `nycflights13` R package. 
+- As long as you load the package, the dataset is automaticaly available. 
+
+But *sometimes*, datasets are not included in packages and must be **imported** separately. 
+
+- A simple way to import data is to use the **Files** tab in the *bottom-right* panel in R Studio. 
+
+--
+
+First, download the `gapminder_2007.csv` file from the online campus, and save it in a folder called **Data**. 
+
+---
+
+# Importing Datasets
+
+Next, click on **Files** in the bottom-right panel, and find the data file you just downloaded. 
+
+&lt;img src="import_data1.png" width="343" /&gt;
+
+---
+
+# Importing Datasets
+
+You might have to click **Update** on this screen if you don't see anything in the main window. 
+
+&lt;img src="import_data2.png" width="70%" /&gt;
+
+---
+
+# Importing Datasets
+
+
+
+
+```r
+gapminder2007
+```
+
+```
+# A tibble: 140 x 4
+   country     continent lifeExp gdpPercap
+   &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+ 1 Afghanistan Asia         43.8      975.
+ 2 Albania     Europe       76.4     5937.
+ 3 Algeria     Africa       72.3     6223.
+ 4 Angola      Africa       42.7     4797.
+ 5 Argentina   Americas     75.3    12779.
+ 6 Austria     Europe       79.8    36126.
+ 7 Bahrain     Asia         75.6    29796.
+ 8 Bangladesh  Asia         64.1     1391.
+ 9 Belgium     Europe       79.4    33693.
+10 Benin       Africa       56.7     1441.
+# … with 130 more rows
+```
+
+---
+
+# Importing Datasets
+
+
+```r
+mean(gapminder2007$lifeExp)
+```
+
+```
+[1] 66.81154
+```
+
+
+```r
+sd(gapminder2007$lifeExp)
+```
+
+```
+[1] 12.04605
+```
+
+---
+
+# One more thing...
+
+Run the code below. You'll thank me later. 
+
+
+```r
+devtools::install_github("melissanjohnson/pupR")
+pupR()
+```
+
+.center[
+&lt;img src="thinking_emoji.jpeg" width="30%" /&gt;
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Exploratory Data Analysis
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+
+
+# Needed Packages
+
+
+```r
+library(nycflights13)
+library(mosaic)
+library(skimr)
+library(tidyverse)
+```
+
+---
+
+# Exploratory Data Analysis (EDA)
+
+EDA should *always* be a first step in data analysis or modeling. 
+
+**Three approaches**:
+
+1. Just look at the "raw" data in a spreadsheet. 
+    - We already do this using `View()`!
+    
+2. Computing **summary statistics**, such as the *mean*, *median*, and *standard deviation*. 
+    - In R: `mean()`, `median()`, `sd()`, and *many others*
+
+3. Creating **data visualizations**. 
+
+---
+
+# Exploratory Data Analysis (EDA)
+
+From *R for Data Science*, by Grolemund and Wickham (2017):
+
+&gt; EDA is not a formal process with a strict set of rules. More than anything, EDA is a state of mind. During the initial phases of EDA you should feel free to investigate every idea that occurs to you. Some of these ideas will pan out, and some will be dead ends. As your exploration continues, you will home in on a few particularly productive areas that you’ll eventually write up and communicate to others.
+
+---
+
+# 'Raw' Data
+
+
+```r
+View(flights)
+?flights
+```
+
+--
+
+**Some variables of interest**
+
+`dep_delay`: **Numerical** variable that measures the depature delay, in minutes, of flights leaving New York in 2013
+
+`carrier`: **Categorical** (nominal) variable consisting of two letter carrier abbreviations
+
+`dest`: **Categorical** (nominal) variable consisting of the destination for each flight, using a city abbreviation
+
+
+---
+
+class: center, middle, frame
+
+# Summary Statistics 
+
+---
+
+# Measures of Center
+
+Here are the metabolic rates for 8 individuals taking part in a study of dieting: `$$1792, 1669, 1362, 1614, 1460, 1867, 1439, 1870$$`
+
+The **mean** is the *sum* of all of the observations divided by the *sample size*: `$$\bar{x}=\frac{1}{n}\sum_{i=1}^{n}x_{i}=\frac{1792+1669+\cdots+1870}{8}=1634.125\ cal/24hrs$$`
+
+---
+
+# Measures of Center
+
+Here are the metabolic rates for 8 individuals taking part in a study of dieting: `$$1792, 1669, 1362, 1614, 1460, 1867, 1439, 1870$$`
+
+The **median** represents the *50th percentile*, or the middle observation in an **ordered dataset**. 
+- If there is an *even* number of observations, the median is the *average of the two middle values*. 
+
+- What is the median in this dataset?
+
+---
+
+# Robustness
+
+The **mean** and **median** are each measures of *center* in a distribution for a numerical variable. 
+
+- The median is a **robust** measure of center; it is *not* sensitive to extreme skewness or outliers. 
+
+- The mean is **non-robust** and is quite sensitive to extreme skewness or outliers. 
+
+.center[
+&lt;img src="dist_shapes.png" width="516" /&gt;
+]
+
+---
+
+# Skewness
+
+**Incomes of 42 patrons in a coffee shop**
+
+.center[
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-5-1.png" width="50%" /&gt;
+]
+$$\bar{x}=\$72,991.87,\quad m=\$64,533.51$$
+
+---
+
+# Skewness
+
+**Incomes of 42 patrons in a coffee shop** (outliers removed)
+
+.center[
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-6-1.png" width="50%" /&gt;
+]
+$$\bar{x}=\$64,766.46, \quad m=\$64,460.32$$
+
+---
+
+# Measures of Spread
+
+**Range**: *maximum* - *minimum*
+
+**Interquartile Range (IQR)**: *third quartile* - *first quartile*
+- The *first quartile* is the *25th percentile* of an ordered dataset. 
+- The *third quartile* is the *75th percentile* of an ordered dataset. 
+
+**Standard Deviation**: `\(s=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i}-\bar{x})^{2}}\)`
+
+**Variance**: `\(s^{2}=\frac{1}{n-1}\sum_{i=1}^{n}(x_{i}-\bar{x})^{2}\)`
+
+From the coffee shop data:
+
+.center[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; range &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; IQR &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; SD &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; With Outliers &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 188995.30 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2192.38 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 37373.69 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Without Outliers &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8139.36 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2135.86 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1782.09 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+---
+
+# Properties of Standard Deviation
+
+1. `\(s\)` is a measure of spread around the *mean*, and should be used when the mean is selected as the best measure of center. 
+
+2. Roughly, the standard deviation can be thought of as the average distance of the observations from the mean.
+
+3. Like the mean, `\(s\)` is non-robust; a few outliers can make `\(s\)` very large. 
+
+4. The units for `\(s\)` are the same as the data. 
+
+---
+
+# Standardized (Z) Scores
+
+You can use the mean and standard deviation together to compare observations *between different sets of variables* using a z-score. 
+
+&gt; One national test has a unimodal and symmetric distribution with a mean of 500 and a standard deviation
+of 100, while a second test has a unimodal and symmetric distribution with a mean of 18 and a standard deviation
+of 6. A student scored 677 on the first test and 29 on the second. Relative to the respective
+distributions, which score is better?
+
+--
+
+A **z-score** for an individual is defined as `$$z=\frac{x-\bar{x}}{s}$$`
+
+What are the z-scores for the student's two test scores? Is the score of 677 actually *better*?
+
+---
+
+class: center, middle, frame
+
+# Summary Statistics (with R)
+
+---
+
+# Summarizing Qualitative (Categorical) Data
+
+The `tally` function in the `mosaic` package gives a count of each level of a categorical variable:
+
+```r
+tally( ~ carrier, data = flights)
+```
+
+```
+carrier
+   9E    AA    AS    B6    DL    EV    F9    FL    HA    MQ    OO    UA    US 
+18460 32729   714 54635 48110 54173   685  3260   342 26397    32 58665 20536 
+   VX    WN    YV 
+ 5162 12275   601 
+```
+
+--
+
+If you add `format = "proportion"`, R will give **proportions** rather than **counts**. 
+
+
+```r
+tally( ~ origin, format = "proportion", data = flights)
+```
+
+```
+origin
+      EWR       JFK       LGA 
+0.3587993 0.3304244 0.3107763 
+```
+
+---
+
+# Summarizing Quantitative (Numerical) Data
+
+There are many functions in both **base** R and the **mosaic** package that can give numerical summary statistics (`mean`, `sd`, `median`, `min`, `max`, etc.)
+
+- The purpose of each of these functions is given in their name!
+    
+The `favstats` function from the `mosaic` package gives *all* of these summary statistics in one line:
+
+```r
+favstats( ~ dep_delay, data = flights)
+```
+
+```
+ min Q1 median Q3  max     mean       sd      n missing
+ -43 -5     -2 11 1301 12.63907 40.21006 328521    8255
+```
+
+---
+
+# Summarizing by Groups
+
+Summary statistics for departure delays are not very useful on their own. 
+- Departure delays may depend on the airline, destination, temperature, etc.
+    
+It is often useful to calculate summary statistics **by group**. Luckily we can accomplish this with a small adjustment to `favstats`:
+
+```r
+delay_summary = favstats(dep_delay ~ carrier, data = flights)
+View(delay_summary)
+```
+
+--
+
+Notice the *syntax* of the `mosaic` package functions when a *grouping variable* is involved: 
+
+.center[
+
+```r
+function_name(y ~ x, data = DATA_NAME)
+```
+]
+
+- The *y* is an **outcome** variable of interest.
+- The *x* is an **explanatory** (*grouping*) variable.
+
+We'll see syntax similar to this throughout the course. 
+
+
+---
+
+# Summarizing by Groups
+
+
+```
+   carrier min Q1 median Q3  max      mean       sd     n missing
+1       9E -24 -6   -2.0 17  747 16.725769 45.90604 17416    1044
+2       AA -24 -6   -3.0  4 1014  8.586016 37.35486 32093     636
+3       AS -21 -7   -3.0  3  225  5.804775 31.36303   712       2
+4       B6 -43 -5   -1.0 12  502 13.022522 38.50337 54169     466
+5       DL -33 -5   -2.0  5  960  9.264505 39.73505 47761     349
+6       EV -32 -5   -1.0 25  548 19.955390 46.55235 51356    2817
+7       F9 -27 -4    0.5 18  853 20.215543 58.36265   682       3
+8       FL -22 -4    1.0 17  602 18.726075 52.66160  3187      73
+9       HA -16 -7   -4.0 -1 1301  4.900585 74.10990   342       0
+10      MQ -26 -7   -3.0  9 1137 10.552041 39.18457 25163    1234
+```
+
+**What do we notice?**
+
+- **Frontier Airlines** (code F9) has the *highest average departure delay* (in minutes). 
+- Most of the *average* departure delays by carrier are much larger than the *medians*. 
+    - Departure delays are typically very **right-skewed**. 
+
+---
+
+# Summary Statistics using `skim()`
+
+In addition to the previous function, we can use the `skim()` function from the `skimr` package:
+
+
+```r
+skim(flights)
+```
+
+**Note**: `p0`, `p50`, and `p100` are the *minimum*, *median*, and *maximum* values, respectively. 
+
+---
+
+# Practice
+
+**Now it's your turn!**
+
+1. Use `favstats()` or `skim()` to calculate summary statistics for **arrival delay** separated by carrier. Do you notice anything different from *departure delays*?
+
+2. Using `tally()` find the most frequent **destination** of flights leaving New York in 2013. 
+
+---
+
+# Single Summary Statistics
+
+If you need a single summary statistic, rather than the *set of statistics* given by `summary()`, `favstats()`, or `skim()`, there are functions for that!
+
+
+```r
+mean( ~ distance, data = flights)
+```
+
+```
+[1] 1039.913
+```
+
+```r
+sd( ~ distance, data = flights)
+```
+
+```
+[1] 733.233
+```
+
+```r
+median( ~ distance, data = flights)
+```
+
+```
+[1] 872
+```
+
+```r
+IQR( ~ distance, data = flights)
+```
+
+```
+[1] 887
+```
+
+---
+
+# Single Summary Statistics (by group)
+
+
+```r
+mean(distance ~ origin, data = flights)
+```
+
+```
+      EWR       JFK       LGA 
+1056.7428 1266.2491  779.8357 
+```
+
+```r
+sd(distance ~ origin, data = flights)
+```
+
+```
+     EWR      JFK      LGA 
+730.2239 896.1084 371.6615 
+```
+
+```r
+median(distance ~ origin, data = flights)
+```
+
+```
+ EWR  JFK  LGA 
+ 872 1069  762 
+```
+
+```r
+IQR(distance ~ origin, data = flights)
+```
+
+```
+ EWR  JFK  LGA 
+ 871 1821  533 
+```
+
+---
+
+class: middle, center, frame
+
+# Data Visualization (with R)
+
+---
+
+# Scatterplots
+
+**Scatterplots**, also called **bivariate plots**, allow you to visualize the relationship between two *numerical* variables. 
+
+--
+
+Let's take another look at the `flights` dataset from the `nycflights13` package. 
+- **Question**: What do you think is the relationship between flight **departure delay** and **arrival delay**?
+    - If a flight is *delayed*, does it *arrive* at a later time than planned? Or does the flight speed up to accommodate?
+    
+--
+
+I traveled to Denver, CO last year for a conference using **Frontier Airlines**. So let's `filter` the flights dataset to look at only Frontier Airlines flights:
+- carrier code: **F9**
+
+```r
+frontier = filter(flights, carrier == "F9")
+```
+
+---
+
+# Scatterplots
+
+Using the `mosaic` package:
+
+
+```r
+gf_point(arr_delay ~ dep_delay, data = frontier)
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-18-1.png" width="50%" /&gt;
+
+---
+
+# Scatterplots
+
+
+```r
+gf_point(arr_delay ~ dep_delay, data = frontier) + 
+  labs(x = "Departure Delay (in mins)", "Arrival Delay (in mins)")
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-19-1.png" width="50%" /&gt;
+
+---
+
+# Scatterplots
+
+
+```r
+gf_point(arr_delay ~ dep_delay, data = frontier) + 
+  labs(x = "Departure Delay (in mins)", "Arrival Delay (in mins)", 
+       title = "Relationship between Departure and Arrival Delay", 
+       subtitle = "Flights leaving NYC in 2013, Frontier Airlines")
+```
+
+**Some notes on syntax**
+
+- `arr_delay ~ dep_delay` follows the `y ~ x` **formula syntax**
+    - Specify `data = ...` so R knows which dataset the two variables come from. 
+    
+- The `labs()` *layer* specifies different **labels**. The labels must be surrounded by **quotation marks**. 
+---
+
+# A Note on Overplotting
+
+Go back to the original scatterplot of `dep_delay` versus `arr_delay`. There is a large cluster of points near 0, indicating no delays in departure or arrival of the flight. 
+
+**The problem**: It is difficult to tell how many points are plotted when there are many clustered around the same values!
+
+--
+
+**The solution**: Change the *transparancy* of the points by using `alpha`:
+
+```r
+xyplot(arr_delay ~ dep_delay, alpha = 0.2, data = frontier)  + 
+  labs(x = "Departure Delay (in mins)", "Arrival Delay (in mins)", 
+       title = "Relationship between Departure and Arrival Delay", 
+       subtitle = "Flights leaving NYC in 2013, Frontier Airlines")
+```
+
+- By default, the `alpha` option is set to `1`.
+    - `alpha = 1` means 100% opaque. 
+    - `alpha = 0` means 100% transparent. 
+    
+---
+
+# Practice
+
+Repeat the previous exercise (i.e., construct a scatterplot of `arr_delay` versus `dep_delay`), but do it for a **different airline**. 
+
+This includes using the `filter()` function from several slides back to select only rows in `flights` that match your airline of choice. 
+
+**Hint**: Check this dataset for carrier codes:
+
+
+```r
+View(airlines)
+```
+
+---
+
+# Histograms
+
+**Histograms** provide a visualization of the *distribution* of a single *numerical* variable. 
+- You need only specify an `x` variable in a histogram. 
+- By default, the `y` variable is *count*. 
+
+--
+
+Suppose we are interested in the *distribution* of hourly temperature recordings in New York. 
+
+**Histograms** share the following information:
+- What is the smallest and largest temperatures, and how often are they observed?
+- What is the "center" temperature?
+- How are the temperatures spread out?
+- What are frequent and infrequent values?
+- Is there any skewness?
+
+---
+
+# Histograms
+
+
+```r
+gf_histogram( ~ temp, data = weather)
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-23-1.png" width="50%" /&gt;
+
+---
+
+# Histograms
+
+.pull-left[
+![](02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+What do we notice about the histogram?
+
+- The **middle** temperatures are around 55-60 degrees Fahrenheit. 
+- The **range** is from ~10 degrees to ~100 degrees. 
+- There are **two prominent peaks** at ~30 degrees and ~70 degrees. 
+    - What do you think could account for these two peaks?
+]
+
+---
+
+# Changing the color of histograms
+
+The `fill` argument changes bar (fill) color in the histogram. 
+
+- Try running this!
+
+```r
+gf_histogram( ~ temp, data = weather, fill = "dodgerblue")
+```
+
+- R has **many colors**. See [this](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). 
+
+---
+
+# Practice
+
+Construct a histogram for `humid` (humidity). As an added bonus, try to improve the *x*-axis label!
+
+--
+
+**Solution**
+
+
+```r
+gf_histogram( ~ humid, data = weather) + 
+  labs(x = "Relative Humidity")
+```
+
+---
+
+# Density Plots
+
+**Density Plots** are an alternate way to visualize the distribution of a single *numerical* variable. 
+
+- Rather than grouping observations into **bins**, a density plot is a single continuous curve over the entire set of observations. 
+
+- The *y*-axis is **density**, and the *area under the curve* totals to 1. 
+
+In `mosaic`, we can create density plots using the `gf_density()` function:
+
+
+```r
+gf_density( ~ temp, data = weather)
+```
+
+---
+
+# Density Plots (by group)
+
+You can have different density plots in the same plot window by adding in the `groups` option. 
+
+Let's create 12 density plots of `temp`, one for each `month`:
+
+
+```r
+gf_density( ~ temp, groups = month, auto.key = TRUE, data = weather)
+```
+
+**Note**: This plot might not be ideal for more than several groups...
+
+---
+
+# Boxplots
+
+**Boxplots**, like **histograms**, show the *distribution* of a *numerical* variable. 
+- However, boxplots are constructed using information provided by a **five-number summary**. 
+
+**Five-number summary**: Minimum, 1st quartile (25th percentile), Median, 3rd quartile (75th percentile), Maximum
+
+As an example, let's look at temperature at the *only the JFK airport* in *November*:
+
+```r
+jfk_nov = filter(weather, origin == "JFK" &amp; month == 11)
+```
+
+---
+
+# Five-Number Summary
+
+In R, a five-number summary of any numerical variable can be found using the `summary()` function:
+
+```r
+summary(jfk_nov$temp)
+```
+
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  23.00   37.04   46.04   45.13   51.98   66.92 
+```
+
+(Recall that we can use the `$` operator to view individual variables in a data frame!)
+
+The `favstats()` and `skim()` functions also work here!
+
+---
+
+# Boxplots
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-31-1.png" width="65%" /&gt;
+
+---
+
+# Boxplots
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-32-1.png" width="65%" /&gt;
+
+---
+
+# Boxplots
+
+**What does the boxplot tell us?**
+
+In November, at JFK Airport in New York...
+- 25% of points fall below the bottom edge of the box, which is the **first quartile** of 37.04 degrees. 
+- 75% of points fall above the top edge of the box, which is the **third quartile** of 51.98 degrees. 
+- 50% of points fall between the first and third quartiles, or between 37.04 and 51.98 degrees. 
+    - This is the **interquartile range (IQR)**. 
+
+---
+
+# Boxplots
+
+**How can we make a boxplot?**
+
+
+```r
+gf_boxplot( ~ temp, data = jfk_nov) + 
+  labs(y = "Hourly Temperature (in degrees F)")
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-1.png" width="50%" /&gt;
+
+---
+
+# Side-by-side Boxplots
+
+Boxplots are more interesting when you compare several side-by-side. 
+
+Let's use the original `weather` dataset to compare `temp` by `month`. 
+- Convert `month` from *numerical* to *categorical* using `factor()`
+
+
+```r
+gf_boxplot(temp ~ factor(month), data = weather) + 
+  labs(x = "Month", y = "Hourly Temperature (in degrees F)")
+```
+
+---
+
+# Side-by-side Boxplots
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-1.png" width="50%" /&gt;
+
+- The dots representing values falling outside the whiskers are called outliers. These can be thought of as anomalous values.
+
+---
+
+# Practice
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-1.png" width="50%" /&gt;
+
+1. What is the **median** hourly wind speed for airports in New York?
+2. What is the **IQR**?
+3. Are there any outliers?
+
+---
+
+# Practice
+
+1. Using the filtered `frontier` dataset (or the airline that you chose earlier), create a boxplot of `dep_delay`. 
+
+2. Using the same dataset as in (1), create side-by-side boxplots of `dep_delay` by `month`. Do you notice any *seasonal trends* in departure delays?
+
+--
+
+**Solution**
+
+
+```r
+gf_boxplot(dep_delay ~ factor(month), fill = "chartreuse", data = frontier) + 
+  labs(x = "Month", y = "Departure Delay (in mins)")
+```
+
+---
+
+# Barplots
+
+**Barplots** provide a visualization of the distribution of a *categorical variable*. 
+
+- The *x*-axis shows *levels* of the categorical variable. 
+- The *y*-axis shows a measure of *frequency* of observations within each level. 
+
+--
+
+Let's go back to the `flights` dataset. 
+- The `carrier` variable consists of the carrier for each flight, represented by a two-letter abbreviation. 
+- The abbreviation meanings are found in the `airlines` dataset. 
+
+```r
+View(flights)
+View(airlines)
+```
+
+---
+
+# Barplot of `carrier`
+
+Using the `flights` data frame, let's create a barplot of the `carrier` variable. 
+
+
+```r
+gf_bar(~ carrier, data = flights)
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png" width="50%" /&gt;
+
+---
+
+# Multiple Categorical Variables
+
+Suppose we want to make different-colored bars for different airports (`origin`). 
+
+
+```r
+carrier_origin_counts = tally(origin ~ carrier, data = flights)
+carrier_origin_counts
+```
+
+```
+##       carrier
+## origin    9E    AA    AS    B6    DL    EV    F9    FL    HA    MQ    OO    UA
+##    EWR  1268  3487   714  6557  4342 43939     0     0     0  2276     6 46087
+##    JFK 14651 13783     0 42076 20701  1408     0     0   342  7193     0  4534
+##    LGA  2541 15459     0  6002 23067  8826   685  3260     0 16928    26  8044
+##       carrier
+## origin    US    VX    WN    YV
+##    EWR  4405  1566  6188     0
+##    JFK  2995  3596     0     0
+##    LGA 13136     0  6087   601
+```
+
+---
+
+# Multiple Categorical Variables
+
+Suppose we want to make different-colored bars for different airports (`origin`). 
+
+- Here, we're "mapping" the *fill* characteristic to the `origin` variable.
+
+
+```r
+gf_bar( ~ carrier, fill = ~ origin, data = flights)
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-41-1.png" width="45%" /&gt;
+
+---
+
+# Flip Axes
+
+
+```r
+gf_bar( ~ carrier, fill = ~ origin, data = flights) + 
+  coord_flip()
+```
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png" width="50%" /&gt;
+
+---
+
+# Pie Charts
+
+.pull-left[
+&lt;img src="laughing_emoji.jpeg" width="179" /&gt;
+]
+
+.pull-right[
+![](https://media.giphy.com/media/1ykhXVZskuM6cpBMlG/giphy.gif)
+]
+
+---
+
+# Pie Charts
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-44-1.png" width="50%" /&gt;
+
+---
+
+# Why are pie charts bad?
+
+Humans have trouble judging angles!
+- For example, we tend to *overestimate* angles greater than 90 degrees, and *underestimate* angles less than 90 degrees (Naomi Robbins, 2013). 
+
+--
+
+Try to answer the following about the pie chart on the previous slide:
+
+- How much larger the portion of the pie is for ExpressJet Airlines (`EV`) compared to US Airways (`US`)?
+
+- What the third largest carrier is in terms of departing flights?
+
+- How many carriers have fewer flights than JetBlue Airways (`B6`)?
+
+--
+
+**Barplots** can answer all of these questions, and more!
+- Pie charts only show pieces out of 100%. 
+
+---
+
+# Pie Charts
+**The Aquaman of data visualization**
+
+&lt;img src="aquaman.jpg" width="75%" /&gt;
+
+---
+
+# Pie Charts
+But...
+
+.center[
+![](https://media.giphy.com/media/wvFQNa6KJpd04/giphy.gif)
+]
+
+---
+
+# Pie Charts
+
+**The Batman (Ben Affleck version) of data visualization**
+
+&lt;img src="batman.jpg" width="75%" /&gt;
+
+---
+
+# Summary
+
+**Exploratory data analysis (EDA)** should always be the *first step* in any data analysis. 
+
+- View the **raw data**. 
+
+- Generate **summary statistics**. 
+
+- Create **visualizations**. 
+
+--
+
+There is no *single set of rules* to perform EDA, and which summary statistics and visualizations to report is up to the researcher. 
+
+- Though depending on the **research question**, the **types of variables**, and the **distribution** of observations, some summary statistics and visualizations are better to report than others. 
+
+--
+
+Though there is **one type of graph** that is *always bad to use*...
+
+---
+
+# Summary
+
+.center[
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-47-1.png" width="50%" /&gt;
+
+&lt;img src="aquaman.jpg" width="10%" /&gt;
+**Pie charts are bad!**
+&lt;img src="batman.jpg" width="10%" /&gt;
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
