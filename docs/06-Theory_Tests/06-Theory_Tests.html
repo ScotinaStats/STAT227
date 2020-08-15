@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Theory-Based Tests
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+# Needed Packages 
+
+
+```r
+library(mosaic)
+library(tidyverse)
+library(infer)
+```
+
+---
+
+class: center, middle, frame
+
+# Theory-Based Hypothesis Tests
+
+---
+
+# Theory vs Simulation
+
+So far we have been focused on using technology and simulation-based methods in order to do and understand statistical inference and data analysis. 
+
+- **Bootstrap resampling** for approximating a *sampling distribution* and constructing **confidence intervals**
+
+- **Permutation tests** for constructing a *null distribution* and performing hypothesis tests for *any* parameter. 
+
+--
+
+However, more traditional *theory-based methods* have been around for decades, mostly because we didn't have the technology to perform any of the simulation-based methods covered this semester. 
+
+- In fact, R was first created in 1993 and was not widely used until the 2000s!
+
+- Theory-based methods are still used in a variety of fields and situations. 
+
+---
+
+# Some Stats History
+
+.pull-left[
+William Sealy Gosset worked as a chemist for the Guinness brewery in Ireland. 
+
+- Gosset implemented the **t-test** as a way to monitor the quality of stout beer. 
+
+- Gosset published this work in *Biometrika* (a top statistical journal) in 1908, but Guinness had a policy that forbade its chemists from publishing their findings while working for the company. 
+
+- The pseudonum *Student* was used instead. 
+]
+
+.pull-right[
+&lt;img src="gosset.jpg" width="75%" /&gt;
+]
+
+---
+
+# Two-sample t-test
+
+Ultimately any theory-based hypothesis test is as an *approximation* to the simulation-based hypothesis test procedures we've used so far. 
+
+- Theory-based tests typically have several *assumptions* that we have to verify in order to use them. 
+
+--
+
+We'll focus on the **two-sample t-test** for the *difference between sample means*. 
+
+- However, the *test statistic* we'll use isn't `\(\bar{x}_{1}-\bar{x}_{2}\)`; rather, the two-sample t-test uses the **t-statistic**. 
+
+---
+
+# Two-sample t-statistic
+
+Recall that we use *z*-scores in order to **standardize** a variable: `$$z=\frac{x-\mu}{\sigma}$$`
+
+This allows us to compare observations from different distributions. 
+
+- **Examples**: 
+    - Comparing ACT and SAT scores 
+    - Comparing weather in different states (Is today's temperature in Boston warmer than the temperature in Orlando, relative to the respective distributions?)
+
+--
+
+The *z*-score **re-centers** a unimodal/symmetric (Normal) variable around 0. 
+
+---
+
+# Standard Normal Distribution
+
+The distribution of *z*-scores for *every* observation in a Normal variable is the **standard Normal distribution** (or a *z-distribution*). 
+
+.center[
+&lt;img src="standard_normal.png" width="430" /&gt;
+]
+
+---
+
+# Back to Movie Ratings
+
+For the `movies_sample` dataset, how would we **standardize** `\(\bar{x}_{r}-\bar{x}_{a}\)`?
+
+- Recall that this is the difference in *average* movie ratings between *romance* and *action* movies. 
+
+--
+
+From **Module 3**: 
+
+- Assuming the sampling is *representative*, then the *sampling distribution* for `\(\bar{x}_{r}-\bar{x}_{a}\)` will be centered at the (unknown) `\(\mu_{r}-\mu_{a}\)`. 
+
+- The *standard deviation of the difference in sample means* is the **standard error**, `\(SE_{\bar{x}_{r}-\bar{x}_{a}}\)`. 
+
+--
+
+Putting this all together, the **two-sample t-statistic** is: `$$t=\frac{(\bar{x}_{r}-\bar{x}_{a})-(\mu_{r}-\mu_{a})}{SE_{\bar{x}_{r}-\bar{x}_{a}}}=\frac{(\bar{x}_{r}-\bar{x}_{a})-(\mu_{r}-\mu_{a})}{\sqrt{\frac{s_{r}^{2}}{n_{r}}+\frac{s_{a}^{2}}{n_{a}}}}$$`
+
+---
+
+# Using the t-statistic
+
+In the *t-test*, we use the *t-statistic* similarly to how we used the **observed difference** in the simulation-based permutation tests. 
+
+`$$t=\frac{(\bar{x}_{r}-\bar{x}_{a})-(\mu_{r}-\mu_{a})}{SE_{\bar{x}_{r}-\bar{x}_{a}}}=\frac{(\bar{x}_{r}-\bar{x}_{a})-(\mu_{r}-\mu_{a})}{\sqrt{\frac{s_{r}^{2}}{n_{r}}+\frac{s_{a}^{2}}{n_{a}}}}$$`
+
+- Assuming `\(H_{0}:\mu_{r}-\mu_{a}=0\)` as we did before, the right-hand side in the above formula becomes 0. 
+
+---
+
+# The t-distribution
+
+Similarly to how we use the CLT to say that `\(\bar{X}\sim N(\mu, \sigma/\sqrt{n})\)` for large `\(n\)`, it can be *mathematically proven* that the *t*-statistic follows a **t-distribution** with **degrees of freedom** roughly equal to `\(df=n_{r}+n_{a}-2\)`. 
+
+- For larger sample sizes, the *df* increases and the *t*-distribution converges to the *standard Normal*. 
+
+.center[
+&lt;img src="t_distributions.png" width="75%" /&gt;
+]
+
+---
+
+# The t-statistic
+
+
+
+
+```r
+favstats(rating ~ genre, data = movies_sample)[7:9]
+```
+
+```
+##    mean       sd   n
+## 1 5.037 1.586665 100
+## 2 6.190 1.312296 100
+```
+
+```r
+# The [7:9] gives us just the mean, sd, n
+# the 7th through 9th entries in favstats()
+```
+
+Plugging these into the *t*-statistic formula, `$$t=\frac{(\bar{x}_{r}-\bar{x}_{a})-(0)}{\sqrt{\frac{s_{r}^{2}}{n_{r}}+\frac{s_{a}^{2}}{n_{a}}}}=\frac{(6.19-5.04)}{\sqrt{\frac{1.31^2}{100}+\frac{1.59^2}{100}}}=5.58$$`
+
+---
+
+# The t-statistic
+
+`$$t=\frac{(\bar{x}_{r}-\bar{x}_{a})-(0)}{\sqrt{\frac{s_{r}^{2}}{n_{r}}+\frac{s_{a}^{2}}{n_{a}}}}=\frac{(6.19-5.04)}{\sqrt{\frac{1.31^2}{100}+\frac{1.59^2}{100}}}=5.58$$`
+
+We used the observed *sample difference in means* to calculate the **test statistic**, which is a *t-statistic* in a two-sample t-test. 
+
+As we have done with permutation tests, next we have to use the test statistic to calculate the **p-value**. 
+
+- How? Compare *t* to a **null distribution**. 
+
+---
+
+# Null Distribution: Simulation vs Theory
+
+First, recall the *null distribution* for the permutation test of `\(\bar{x}_{r}-\bar{x}_{a}\)` from earlier in the module:
+
+
+```r
+null_distribution_rating = movies_sample %&gt;%
+  specify(response = rating, explanatory = genre) %&gt;%
+  hypothesize(null = "independence") %&gt;%
+  generate(reps = 1000, type = "permute") %&gt;%
+* calculate(stat = "diff in means", order = c("Romance", "Action"))
+visualize(null_distribution_rating)
+```
+
+--
+
+We can also *simulate* a null distribution for theory-based test statistics, such as the *t*-statistic:
+
+
+```r
+null_distribution_rating_t = movies_sample %&gt;%
+  specify(response = rating, explanatory = genre) %&gt;%
+  hypothesize(null = "independence") %&gt;%
+  generate(reps = 1000, type = "permute") %&gt;%
+* calculate(stat = "t", order = c("Romance", "Action"))
+visualize(null_distribution_rating_t)
+```
+
+---
+
+# Theory-Based Null Distribution
+
+However, because theory-based methods were used before computers were around, the traditional theory-based *t*-test doesn't look at a *simulated histogram* of the null distribution. 
+
+- Instead, it looks at the *t*-distribution curve with `\(df=n_{r}+n_{a}-2=198\)`:
+
+
+```r
+visualize(null_distribution_rating_t, method = "both", 
+          dens_color = "red", fill = "gray") + 
+  theme_bw()
+```
+
+&lt;img src="06-Theory_Tests_files/figure-html/unnamed-chunk-10-1.png" width="35%" /&gt;
+
+---
+
+# Theory-Based Null Distribution
+
+
+```r
+visualize(null_distribution_rating_t, method = "both", 
+          dens_color = "red", fill = "gray") + 
+  shade_p_value(obs_stat = 5.58, direction = "both") + 
+  theme_bw()
+```
+
+&lt;img src="06-Theory_Tests_files/figure-html/unnamed-chunk-11-1.png" width="30%" /&gt;
+
+It seems that the theoretical curve does a good job of *approximating* the histogram. 
+
+- To calculate the p-value, we need to calculate the total area under the *t-distribution curve* that is equal to or "more extreme" than the observed *t*-statistic (5.58). 
+
+---
+
+# Theory-Based p-value
+
+
+```r
+null_distribution_rating_t %&gt;%
+  get_p_value(obs_stat = 5.58, direction = "both")
+```
+
+```
+## # A tibble: 1 x 1
+##   p_value
+##     &lt;dbl&gt;
+## 1       0
+```
+
+OR, using a non-simulation-based approach:
+
+
+```r
+t.test(rating ~ genre, data = movies_sample)
+```
+
+---
+
+# Conditions for two-sample t-test
+
+Let's visit a warning message you might have seen when using `get_p_value()` with the *t*-test:
+
+&gt; `Check to make sure the conditions have been met for the theoretical method. {infer} currently does not check these for you.`
+
+To be able to use *t*-tests and other theory-based statistical procedures there are a few **conditions** to check. 
+
+--
+
+1. Nearly Normal populations *or* large sample sizes (usually `\(n_{1}&gt;30\)` and `\(n_{2}&gt;30\)`)
+
+2. Both *samples* are selected independently *of each other*. 
+
+3. All *observations* are independent from each other. 
+
+--
+
+Only **Condition 3** is questionable in the movie ratings example. For example, if *the same person rated multiple movies*, then the osbervations are not independent. 
+
+---
+
+# What happens if a condition isn't met?
+
+If any of the conditions for a theory-based hypothesis test are not met, then we can't put much faith into any of the conclusions reached using these tests. 
+
+- In these cases, we could instead use a **permutation test** since these don't require a list of conditions to check!
+
+--
+
+Run the following to load a dataset consisting of waiting times of 24 automobile oil changes, 12 from store "A" and 12 from store "B". 
+
+
+```r
+oil = data.frame(
+  times = c(104, 102, 35, 911, 56, 325, 7, 9, 179, 59, 4, 19,
+            25, 45, 10, 31, 187, 342, 531, 21, 28, 2104, 2, 12), 
+  store = c(rep("A", 12), rep("B", 12))
+  )
+```
+
+---
+
+# What happens if a condition isn't met?
+
+Clearly, the sample sizes in the `oil` dataset are small, and each separate distribution of waiting times is **right-skewed**. 
+
+
+```r
+gf_density( ~ times, fill = ~ store, data = oil)
+```
+
+&lt;img src="06-Theory_Tests_files/figure-html/unnamed-chunk-15-1.png" width="30%" /&gt;
+
+- Therefore it might be better to look at a hypothesis test for **difference between medians**. 
+
+- But we can't do that with a *t*-test! Those are only for **means**!
+
+---
+
+# Practice
+
+1. Using the `oil` dataset, conduct a **two-sample t-test** to see if the *average* waiting times are different between stores.
+
+2. Conduct a **permutation test** to see if the *median* waiting times are different between stores. 
+
+--
+
+*Solution*
+
+
+```r
+favstats(times ~ store, data = oil)
+
+t.test(times ~ store, data = oil)
+
+median_diff = oil %&gt;%
+  specify(response = times, explanatory = store) %&gt;%
+  calculate(stat = "diff in medians", order = c("A", "B"))
+
+oil %&gt;%
+  specify(response = times, explanatory = store) %&gt;%
+  hypothesize(null = "independence") %&gt;%
+  generate(reps = 1000) %&gt;%
+  calculate(stat = "diff in medians", order = c("A", "B")) %&gt;%
+  get_p_value(obs_stat = median_diff, direction = "both")
+```
+
+---
+
+# Why doesn't the t-test work here?
+
+
+```r
+oil %&gt;%
+  specify(response = times, explanatory = store) %&gt;%
+  hypothesize(null = "independence") %&gt;%
+  generate(reps = 1000) %&gt;%
+  calculate(stat = "t", order = c("A", "B")) %&gt;%
+  visualize(method = "both")
+```
+
+&lt;img src="06-Theory_Tests_files/figure-html/unnamed-chunk-17-1.png" width="30%" /&gt;
+
+---
+
+class: center, middle, frame
+
+# When inference is not needed
+
+---
+
+# Back to the `flights` data frame
+
+Sometimes, it isn't necessary to perform a statistical hypothesis test. 
+- *Always* do **exploratory data analysis**!
+
+--
+
+
+```r
+View(flights)
+```
+
+---
+
+# Average Flight Times 
+
+Assuming two flights leave from New York, which do you think is longer?
+- The flight to **Boston**?
+- The flight to **San Francisco**?
+
+--
+
+
+```r
+bos_sfo = flights %&gt;%
+  na.omit() %&gt;% # removes flights with missing info
+  filter(dest %in% c("BOS", "SFO")) 
+```
+
+---
+
+# Exploratory Data Analysis: Summary Statistics
+
+
+```r
+favstats(air_time ~ dest, data = bos_sfo)
+```
+
+```
+  dest min  Q1 median  Q3 max     mean        sd     n missing
+1  BOS  21  36     38  41 112  38.9530  4.948552 15022       0
+2  SFO 295 333    345 357 490 345.6831 17.234986 13173       0
+```
+
+Or...
+
+
+```r
+mean(air_time ~ dest, data = bos_sfo)
+sd(air_time ~ dest, data = bos_sfo)
+```
+
+---
+
+# Exploratory Data Analysis: Data Visualization
+
+
+```r
+gf_boxplot(air_time ~ dest, data = bos_sfo) + 
+  labs(y = "Air Time (in minutes")
+```
+
+&lt;img src="06-Theory_Tests_files/figure-html/unnamed-chunk-22-1.png" width="45%" /&gt;
+
+---
+
+# Conclusions
+
+There is *no overlap at all* in the boxplots!
+
+- This means that the air time for San Francisco flights is **statistically greater** than the air time for Boston flights (which isn't surprising). 
+
+Hypothesis testing procedures *would not be necessary* for data such as these. 
+
+- Always do **exploratory data analysis**!!!
+
+---
+
+# Summary
+
+Here are the steps for *any* hypothesis test:
+
+1. Calculate a **sample statistic** (or *observed effect*). 
+    - mean, difference in means, proportion, difference in proportions, median, etc.
+    
+2. Simulate a world where the *null hypothesis is true*. 
+    - Using `generate(reps = )` and `calculate()`
+    
+3. `visualize()` where the *osberved effect* appears in the simulated world where the *null hypothesis is true*. 
+
+4. Calculate the *probability* that the observed effect (or something *more extreme*) could appear in this simulated world.
+
+    - Using `get_p_value(obs_stat = , direction = )`
+
+5. Decide if the observed effect is **statistically significant**. 
+    - Compare the p-value to 0.05, the **level of significance**. 
+    
+--
+
+Also: **Don't forget to include a confidence interval!**
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
