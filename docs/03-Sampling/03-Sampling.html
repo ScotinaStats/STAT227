@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Sampling via Simulation
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+
+class: center, middle, frame
+
+# Computer Simulation
+
+---
+
+# Needed Packages 
+
+
+```r
+library(tidyverse)
+library(mosaic)
+library(moderndive)
+```
+
+---
+
+# Virtual Sampling
+
+We will use R to perform a **computer simulation**, in which we will sample from a *virtual environment*. 
+
+--
+
+The `bowl` data frame in the `moderndive` R package contains data on a "population" (or a *virtual bowl*) of red and white balls. 
+- We will use R to collect *virtual samples*. 
+
+---
+
+# A "Population"
+
+
+```r
+bowl
+```
+
+```
+# A tibble: 2,400 x 2
+   ball_ID color
+     &lt;int&gt; &lt;chr&gt;
+ 1       1 white
+ 2       2 white
+ 3       3 white
+ 4       4 red  
+ 5       5 white
+ 6       6 white
+ 7       7 red  
+ 8       8 white
+ 9       9 red  
+10      10 white
+# … with 2,390 more rows
+```
+
+- This tells us that there are 2,400 total balls, with each *equally likely* to be selected in a virtual sample. 
+
+---
+
+# One Virtual Sample
+
+To collect a *virtual sample* of size `\(n=50\)`, we will use the `rep_sample_n()` function in the `moderndive` package. 
+- In `rep_sample_n()`, the `rep` stands for **repeat**, and the `n` refers to the **size** of the *virtual sample*. 
+
+
+
+```r
+virtual_sample = rep_sample_n(bowl, size = 50)
+```
+
+
+```r
+View(virtual_sample)
+```
+
+---
+
+# One Virtual Sample
+
+If you followed along, you might notice that your `ball_ID` variable contains different numbers from mine. 
+- This is because we each used R's **random number generator** when we ran `rep_sample_n()`, so our samples are all different!
+
+--
+
+Next, calculate the proportion of balls in your *virtual sample* that are red, using `tally`:
+
+```r
+tally( ~ color, format = "proportion", data = virtual_sample)
+```
+
+```
+color
+  red white 
+ 0.34  0.66 
+```
+
+---
+
+# One Virtual Sample
+
+In my *virtual sample*, there were 40% red balls. 
+
+Now let's find the proportion of the 2,400 balls in the `bowl` data frame that are red:
+
+```r
+tally( ~ color, format = "proportion", data = bowl)
+```
+
+```
+color
+  red white 
+0.375 0.625 
+```
+
+- I was close! How close were you?
+
+---
+
+# Many Virtual Samples
+
+While I had each of you take a *virtual sample*, there is an easy way for each of us to *simulate* many virtual samples, using `rep_sample_n()`. 
+
+Here's how you can simulate **30 samples**, each of size `\(n=50\)`, from the "population" of 2,400 balls:
+
+```r
+virtual_samples_30 = rep_sample_n(bowl, size = 50, reps = 30)
+```
+
+--
+
+The syntax is almost identical to our single *virtual sample*. 
+- However, we add the `reps` argument, which indicates that we want to **repeat** the sampling 30 times. 
+
+---
+
+# Many Virtual Samples
+
+Notice that when we `View(virtual_samples_30)`, the first 50 rows of `replicate` are equal to `1`, the next 50 rows equal to `2` and so on, until you reach replicate `30`. 
+- Therefore, there are `\(30\cdot 50=1500\)` rows in this data frame. 
+
+--
+
+We need to calculate the proportion of red balls **for each replicate**. How can we calculate the proportion of red balls in each group?
+
+---
+
+# Summarizing Proportion by Group
+
+We can use the `tally(y ~ x)` syntax!
+
+
+```r
+virtual_prop_red = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_30)["red", ]
+```
+
+
+```r
+View(virtual_prop_red)
+```
+
+--
+
+Using `View(virtual_prop_red)`, we see that there are now *30 columns*: each column gives a summary measure for the corresponding **replicate**. 
+
+**Note**: We used `["red", ]` to include only the row with proportions of **red** balls, since the proportions of white balls are redundant (they add to 1). 
+
+---
+
+# Practice
+
+Using `histogram()` in the `mosaic` package, construct a **histogram** of your 30 `prop_red` values in `virtual_prop_red`. 
+- Make sure you add `type = "count"` so the *y*-axis gives a **count**. 
+- What do you notice about the **distribution**?
+
+--
+
+**Solution**
+
+
+```r
+gf_histogram( ~ virtual_prop_red)
+```
+
+---
+
+# 1,000 Virtual Samples
+
+With each of our 30 *virtual samples*, we can see that there is **variation** between each sample. 
+- But we could get an even better idea of **sampling variability** if we use *more* than 30 replicates. 
+
+Instead of `reps = 30`, now let's try `reps = 1000` for 1,000 *virtual samples* of size 50!
+
+
+```r
+virtual_samples_1000 = rep_sample_n(bowl, size = 50, reps = 1000)
+```
+
+**Note**: You could try `View(virtual_samples_1000)`, but there are `\(1000\cdot 50=50000\)` rows!
+
+---
+
+# Practice
+
+Perform the *exact same* calculations as with `virtual_samples_30`, but now with `virtual_samples_1000`:
+
+1. Use `tally(color ~ replicate)` to calculate the proportion of red balls in each **replicate**. 
+
+2. Construct a **histogram** of the 1,000 `prop_red` values (adapt the code from several slides back). What do you notice about the shape of the histogram?
+
+---
+
+# Solution
+
+
+```r
+virtual_prop_red_1000 = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_1000)["red", ]
+```
+
+
+```r
+# Play with binwidth to increase bar width
+gf_histogram( ~ virtual_prop_red_1000, binwidth = 0.02)
+```
+
+---
+
+# 1,000 Virtual Samples
+
+.center[
+&lt;img src="03-Sampling_files/figure-html/unnamed-chunk-16-1.png" width="50%" /&gt;
+]
+
+---
+
+# Many Large Virtual Samples
+
+So far, we have been controlling *how many* **samples of size 50** we take from the "population."
+- But we can also control the **sample size**. 
+
+Repeat the same exercise as before using 1,000 replicates, but this time use a **sample size of 100**.
+
+--
+
+
+```r
+virtual_samples_100 = rep_sample_n(bowl, size = 100, reps = 1000)
+
+virtual_prop_red_100 = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_100)["red", ]
+```
+
+---
+
+# 1,000 Virtual Samples of size 100
+
+.center[
+&lt;img src="03-Sampling_files/figure-html/unnamed-chunk-18-1.png" width="50%" /&gt;
+]
+
+These types of *distributions* are very special: they are called **sampling distributions**. 
+- A **sampling distribution** is a distribution of **sample statistics**.
+
+---
+
+# Sampling Distributions
+
+A **sampling distribution** is a distribution of **sample statistics**.
+
+The sample statistics in this case are **sample proportions**, `\(\hat{p}\)`. 
+
+- In each sample, `\(\hat{p}\)` is the proportion of balls that are red. 
+
+- We took *many* samples, so we were able to plot a histogram of the *many* `\(\hat{p}\)`. 
+
+---
+
+# Some Final Observations
+
+What do we observe about the relationship between **sample size** and the **number of samples/replicates**?
+
+- As the sample size increases, the **spread** of `\(\hat{p}\)` across the 1,000 replicates decreases. 
+    - Less differences in `prop_red` due to **sampling variation**, and the distribution is centered more tightly around the same value (~0.35-0.40). 
+
+--
+
+- Let's go one step further. Using 1,000 replicates, calculate the **mean** and **standard deviation** of `\(\hat{p}\)` using `favstats` for varying sample sizes: 10, 50, 100. 
+- Use the code for `\(n=10\)` on the next slide to get started!
+
+---
+
+# Mean, SD for n = 10
+
+
+
+
+```r
+virtual_samples_10 = rep_sample_n(bowl, size = 10, reps = 1000)
+
+virtual_prop_red_10 = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_10)["red", ]
+
+favstats( ~ virtual_prop_red_10)
+```
+
+```
+ min  Q1 median  Q3 max   mean        sd    n missing
+   0 0.3    0.4 0.5 0.9 0.3706 0.1554342 1000       0
+```
+
+---
+
+# Mean, SD for n = 50
+
+
+
+
+```r
+virtual_samples_50 = rep_sample_n(bowl, size = 50, reps = 1000)
+
+virtual_prop_red_50 = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_50)["red", ]
+
+favstats( ~ virtual_prop_red_50)
+```
+
+```
+ min   Q1 median   Q3  max    mean         sd    n missing
+ 0.2 0.32   0.38 0.42 0.64 0.37784 0.06954258 1000       0
+```
+
+---
+
+# Mean, SD for n = 100
+
+
+
+
+```r
+virtual_samples_100 = rep_sample_n(bowl, size = 100, reps = 1000)
+
+virtual_prop_red_100 = 
+  tally(color ~ replicate, format = "proportion", 
+        data = virtual_samples_100)["red", ]
+
+favstats( ~ virtual_prop_red_100)
+```
+
+```
+  min   Q1 median   Q3  max    mean         sd    n missing
+ 0.23 0.34   0.38 0.41 0.59 0.37699 0.04817427 1000       0
+```
+
+---
+
+# Summary Statistics
+
+.center[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; sample.size &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.367 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1500 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.377 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0680 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.375 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0471 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+--
+
+As the sample size **increases**, the standard deviation **decreases**.
+- These types of standard deviations are so special that they get their own name: **standard error**. 
+    - **Standard errors** quantify the effect of sampling variation induced on our estimates. 
+    
+---
+
+# Summary Statistics
+
+.center[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; sample.size &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.367 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1500 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.377 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0680 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.375 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0471 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+**Remember**: The *true* "population" proportion is `\(p=0.375\)`. 
+
+A certain *theorem* states that, as the sample size gets *larger*...
+
+1. The **mean** of the sampling distribution *converges* to `\(p\)`. 
+
+2. The **standard deviation** of the sampling distribution *converges* to `\(\sqrt{p(1-p)/n}\)`. 
+
+3. The **shape** of the sampling distribution is *Normal*. 
+    
+---
+
+# Sampling Distribution for the Sample Mean
+
+This exercise can also be done with **means**. 
+
+The `pennies` dataset in the `moderndive` package contains the ages of 800 pennies, measured in 2011. 
+- Let's treat this as a "population."
+
+
+```r
+View(pennies)
+```
+
+--
+
+Using `rep_sample_n()`, take 1,000 replicates of *size 10* from this "population":
+
+
+
+
+```r
+virtual_pennies_10 = rep_sample_n(pennies, size = 10, reps = 1000)
+```
+
+--
+
+Now, calculate the **mean** penny age within each replicate:
+
+
+```r
+virtual_mean_10 = mean(age_in_2011 ~ replicate, data = virtual_pennies_10)
+```
+
+---
+
+# Practice
+
+Repeat this exercise for `\(n=50\)` and `\(n=100\)`. 
+
+--
+
+**Solution**
+
+
+
+
+```r
+virtual_pennies_50 = rep_sample_n(pennies, size = 50, reps = 1000)
+virtual_mean_50 = mean(age_in_2011 ~ replicate, 
+                       data = virtual_pennies_50)
+```
+
+
+
+
+```r
+virtual_pennies_100 = rep_sample_n(pennies, size = 100, reps = 1000)
+virtual_mean_100 = mean(age_in_2011 ~ replicate, 
+                        data = virtual_pennies_100)
+```
+
+---
+
+# Summary Statistics
+
+.center[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; sample.size &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.70 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.13 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.44 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+--
+
+As the sample size **increases**, the standard error **decreases**.
+
+--
+
+
+```r
+favstats( ~ age_in_2011, data = pennies)
+```
+
+```
+ min Q1 median Q3 max    mean       sd   n missing
+   0 11     20 30  63 21.1525 12.43956 800       0
+```
+
+As the sample size **increases**, the *mean of the sampling distribution* gets closer to the *true mean*. 
+
+---
+
+# Summary Statistics
+
+.center[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; sample.size &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.70 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.13 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.44 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+**Remember**: The *true* "population" mean is `\(\mu=21.15\)` with a standard deviation of `\(\sigma=12.44\)`. 
+
+A certain *theorem* states that, as the sample size gets *larger*...
+
+1. The **mean** of the sampling distribution *converges* to `\(\mu\)`. 
+
+2. The **standard deviation** of the sampling distribution *converges* to `\(\sigma/\sqrt{n}\)`. 
+
+3. The **shape** of the sampling distribution is *Normal*. 
+
+---
+
+class: center, middle, frame
+
+# Sampling Framework
+
+---
+
+# Why do we sample? 
+
+In both the *virtual* simulations and in **real life**, our goal is the same:
+- Estimate the *true* proportion, by extracting samples from a *population*.
+
+--
+
+Additionally, we discussed two key concepts:
+
+1. The effect of **sampling variation** on our estimates (i.e., `\(\hat{p}\)` or `\(\bar{x}\)`).
+
+2. The effect of **sample size** on sampling variation.
+
+---
+
+# Some Terminology
+
+**(Study) Population**: A collection of individuals or observations about which we are interested, with size usually denoted by `\(N\)`. 
+- In our virtual simulations, `\(N=2400\)`. 
+
+**Population Parameter**: A numerical summary quantity about the population that is **unknown**, but you wish you knew. 
+- If the population parameter is a **mean**, it is denoted by `\(\mu\)` ("mu"). 
+- If the population parameter is a **proportion**, it is denoted by `\(p\)`. 
+
+**Census**: An exhaustive enumeration or counting of all `\(N\)` individuals or observations in the population in order to compute the population parameter’s value exactly.
+- A census can be quite expensive in terms of time, energy, and money. 
+
+---
+
+# Some Terminology
+
+**Sampling**: The act of collecting a sample from the population when we don’t have the means to perform a census, with size usually denoted by `\(n\)`. 
+
+**Sample Statistic**: A **summary statistic** computed from the **sample** that estimates the unknown population parameter. 
+- If the sample statistic is a **mean**, it is denoted by `\(\bar{x}\)` or `\(\bar{y}\)`. 
+- If the sample statistic is a **proportion**, it is denoted by `\(\hat{p}\)` ("p-hat")
+
+**Representative Sampling**: A sample is said be a representative sample if it is representative of the population.
+
+---
+
+# Central Limit Theorem
+
+What we have illustrated throughout class today is one of the most important theorems in all of statistics. 
+
+**The Central Limit Theorem (CLT)**: As the sample size `\(n\)` gets larger, the *sampling distribution* of the sample mean (or sample proportion) becomes more *bell-shaped* (i.e., more **Normally** distributed and more narrow).
+
+Specifically, we can write the following: `$$\bar{x}\sim \text{Normal}\left(\mu, \frac{\sigma}{\sqrt{n}}\right)$$`
+and `$$\hat{p}\sim \text{Normal}\left(p, \sqrt{\frac{p(1-p)}{n}}\right)$$`
+
+---
+
+# Notation Summary
+
+&lt;img src="notation-summary.png" width="495" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
