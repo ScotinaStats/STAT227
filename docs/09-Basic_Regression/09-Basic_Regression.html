@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Basic Linear Regression
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+&lt;!--
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/08-Linear_Regression/08-Linear_Regression.html")
+--&gt;
+
+# Data Modeling
+
+Two purposes for modeling:
+
+1. **Modeling for prediction**: You want to *predict* the outcome variable `\(y\)` based on information contained in the predictor variable(s).
+    - *Example*: predicting risk of heart disease using age, weight, BMI, etc.
+    
+    - *Example*: Disney+ trying to predict the next movie you'll watch
+
+2. **Modeling for explanation**: You want to describe the *relationship* between the outcome variable `\(y\)` and the explanatory/predictor variable(s). 
+    - *Example*: describe the relationship between a new treatment and risk of heart disease
+    
+    - *Example*: Disney+ trying to see the effect of time of day on movie selection
+
+---
+
+# Linear Regression
+
+There are *many* ways to model data. In this module, we will focus on **linear regression**. 
+
+**Linear regression modeling** involves:
+
+- a **numerical** outcome variable `\(y\)`, and
+
+- explanatory variable(s) `\(x\)` that are either *numerical* or *categorical*
+
+--
+
+The **model** follows this form: `$$\hat{y}=b_{0}+b_{1}\cdot x$$`
+where:
+
+- `\(\hat{y}\)` is the **predicted** value of *y*
+
+- `\(b_{0}\)` and `\(b_{1}\)` are **coefficients** (more on these later)
+
+---
+
+# Needed Packages
+
+
+```r
+library(tidyverse)
+library(moderndive)
+library(mosaic)
+```
+
+---
+
+class: center, middle, frame
+
+# One Numerical Explanatory Variable
+
+---
+
+# Motivating Example
+
+What factors explain the differences in house prices in Washington state?
+
+The `house_prices` dataset in the `moderndive` package contains data on a sample of 21,613 homes sold in King County, Washington between May 2014 and May 2015. 
+
+
+```r
+View(house_prices)
+```
+
+--
+
+**Outcome** variable (*y*): `price` (price of the house when sold, in USD)
+
+**Explanatory** variable (*x*): `bedrooms` (number of bedrooms)
+
+--
+
+**"Research" question**: Could it be that more expensive homes have more bedrooms?!
+
+---
+
+# EDA: Summary Statistics
+
+
+```r
+favstats( ~ price, data = house_prices)
+favstats( ~ bedrooms, data = house_prices)
+```
+
+The summary statistics give us a snapshot at the *univariate* distribution for each variable:
+
+- The **mean** house price is &lt;span&gt;&amp;#36;&lt;/span&gt;540,088.14 with a *standard deviation* of &lt;span&gt;&amp;#36;&lt;/span&gt;367,127.20. 
+    - As you might imagine, this is a very **right-skewed** variable (median price is &lt;span&gt;&amp;#36;&lt;/span&gt;450,000). 
+    
+- The **mean** number of bedrooms per home is 3.37 with a *standard deviation of 0.93. 
+    - This is actually a (roughly) symmetrical variable, save for the house with **THIRTY THREE** (33) bedrooms!!!
+    
+--
+
+Note that these are all **univariate** summaries, i.e., summaries about *single variables*.
+
+Let's review a statistic that quantifies the relationship *between* two variables. 
+
+---
+
+# Correlation Coefficient
+
+The **correlation coefficient** (*r*) is a *bivariate* summary statistic. 
+
+- summarizes the strength of the **linear** relationship between two *numerical* variables. 
+
+- ranges from -1 to 1
+
+--
+
+- -1 indicates a **perfect negative** *linear* relationship: as the value of one variable goes up, the value of the other variable tends to go down.
+
+- 0 indicates **no linear relationship**: the values of both variables go up/down independently of each other.
+
+- +1 indicates a **perfect positive** *linear* relationship: as the value of one variable goes up, the value of the other variable tends to go up as well.
+
+---
+
+# Correlation Coefficient in R
+
+We can use the `cor()` function in the `mosaic` package:
+
+```r
+cor(price ~ bedrooms, data = house_prices)
+```
+
+```
+## [1] 0.3083496
+```
+
+- `\(r=0.31\)`: There is a *weak-to-moderate* **linear** relationship between house price and bedrooms per home. 
+
+**Reminder**: All the correlation coefficient shows us is the *strength* and *direction* of the *linear* relationship. **That's it**. 
+- The 0.31 is *not* on the same scale as *x* or *y*. 
+
+---
+
+# Data Visualization
+
+Because `price` and `bedrooms` are both **numerical**, a **scatterplot** would be useful in visualizing their relationship. 
+
+```r
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-6-1.png" width="40%" /&gt;
+
+---
+
+# `gf_point() + geom_smooth()`
+
+
+```r
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+**Notes**
+
+- `gf_point(y ~ x)` produces a **scatterplot**
+
+- `geom_smooth(method = "lm", se = FALSE)` overlays the **regression line** *without* error bands (try `se = TRUE` to see what I mean). 
+
+---
+
+# Taking care of the outlier...
+
+It is reasonable to suspect that the **outlier** with 33 bedrooms is *not representative* of the population in the same way that the rest of the sample is. 
+
+- Let's remove the outlier to see if `bedrooms` and `price` are more *linearly related*:
+
+
+```r
+outlier_index = which(house_prices$bedrooms == 33) #15871
+house_prices_new = 
+  house_prices[-outlier_index, ]
+```
+
+- This removes the 15,871st row, which contains the outlier, from the data. 
+
+---
+
+# (New) Data Visualization
+
+
+```r
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-9-1.png" width="45%" /&gt;
+
+- Even after removing the outlier, there isn't a clear linear relationship between `price` and `bedrooms`. 
+
+---
+
+class: center, middle, frame
+
+# Simple Linear Regression
+
+---
+
+# The Linear Model
+
+The points in a scatterplot usually don't line up perfectly. 
+
+- Perfect correlations of +1 or -1 never happen. 
+
+Using a scatterplot with two strongly correlated variables, you can easily sketch a straight line that summarizes the data pretty well.
+
+A **linear model** gives an equation of a straight line through the data. 
+
+---
+
+# Linear Model
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-10-1.png" width="45%" /&gt;
+
+---
+
+# Non-linear Model
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-11-1.png" width="45%" /&gt;
+
+---
+
+# Non-linear Model
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-12-1.png" width="45%" /&gt;
+
+---
+
+# A (bad) Model
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-13-1.png" width="45%" /&gt;
+
+---
+
+# Models
+
+In statistics, a **model** is a summary and simplification of data that help our understanding in many ways. 
+
+A **linear model** uses sample data to generate a *line of best fit*...
+- ...that is used to help our understanding of the linear relationship between `\(x\)` and `\(y\)`. 
+
+- Our model will be *wrong* (i.e., our line won't match reality *perfectly*). 
+
+- But hopefully, it is still useful!
+
+---
+
+# A Good Quote
+
+.pull-left[
+&gt; *All models are wrong, but some are useful.*
+
+- George Box, famous statistician
+]
+
+.pull-right[
+&lt;img src="box.jpg" width="75%" /&gt;
+]
+
+---
+
+# Simple Linear Regression Model
+
+A **simple linear regression model** follows the form of an *equation of a straight line*:
+`$$\hat{y}=b_{0}+b_{1}\cdot x$$`
+
+- The `\(\hat{y}\)` denotes the **predicted outcome variable**. 
+    
+- The **intercept coefficient** is `\(b_{0}\)`, or the value of `\(\hat{y}\)` when `\(x=0\)`.
+
+- The **slope coefficient** is `\(b_{1}\)`, or the *average* change in `\(\hat{y}\)` for every one-unit increase in `\(x\)`.
+
+---
+
+# Regression Coefficients
+
+.pull-left[
+![](09-Basic_Regression_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+Because `\(x=bedrooms\)` and `\(y=price\)`, the regression equation is
+`$$\widehat{price} = b_{0}+b_{1}\cdot bedrooms$$`
+- Do you think the slope will be *positive* or *negative*?
+]
+
+---
+
+# Regression Coefficients
+
+But what are the *specific values* of the regression coefficients, `\(b_{0}\)` and `\(b_{1}\)`?
+
+- Luckily, R can calculate these for us, by using the `lm()` function.
+
+
+```r
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+```
+## # A tibble: 2 x 7
+##   term      estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept  110316.     9108.      12.1       0   92462.  128169.
+## 2 bedrooms   127548.     2610.      48.9       0  122432.  132664.
+```
+
+---
+
+# Regression Coefficients
+
+
+```r
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+In R, `lm()` stands for **L**inear **M**odel. 
+
+- Similar to `aov()` when conducting an **ANOVA**, we *assigned* `lm()` to an object (`lm_house`). 
+
+- The `get_regression_table()` function in the `moderndive` package gives the estimated **coefficients** (under the `estimate` column), along with other important information. 
+
+---
+
+# The Estimated Linear Model
+
+
+```r
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+```
+## # A tibble: 2 x 7
+##   term      estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept  110316.     9108.      12.1       0   92462.  128169.
+## 2 bedrooms   127548.     2610.      48.9       0  122432.  132664.
+```
+
+- The **intercept** coefficient is `\(b_{0}=110316\)`. 
+- The **slope** coefficient is `\(b_{1}=127548\)`. 
+
+Therefore, `$$\widehat{price} = 110316 + 127548\cdot bedrooms$$`
+
+---
+
+# Interpreting the Regression Coefficients
+
+The **intercept** `\(b_{0}=110316\)`. 
+
+- This means that the **average** price is &lt;span&gt;&amp;#36;&lt;/span&gt;110,316 for homes with 0 *bedrooms*.     
+    - The intercept often doesn't make sense in context, but it does make sense here (e.g., studio apartments?). 
+
+--
+
+The **slope** `\(b_{1}=127548\)`. 
+
+- This means that, for every additional `bedroom`, there is an associated increase of, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;127,548 on the price of the home. 
+    - The slope is usually of more interest to us than the intercept. 
+
+---
+
+# Predicting House Price
+
+We can also use the equation of the linear model to **predict** the outcome (*y*) for a given value of *x*.
+
+For example, let's predict the *price* of a home with *three bedrooms*: `$$\widehat{price} = 110316 + 127548\cdot bedrooms= 110316 + 127548\cdot 3=492960$$`
+
+--
+
+The **linear model** predicts that a house with *three bedrooms* will cost &lt;span&gt;&amp;#36;&lt;/span&gt;492,960. 
+
+---
+
+class: center, middle, frame
+
+# One Categorical Explanatory Variable
+
+---
+
+# Motivating Example
+
+Do you think that **waterfront homes** are typically *more expensive* than **non-waterfront homes**?
+
+--
+
+.pull-left[
+**Waterfront Home**
+&lt;img src="waterfront_seattle.jpg" width="205" /&gt;
+]
+
+.pull-right[
+**Non-waterfront Home**
+&lt;img src="nonwaterfront.jpg" width="176" /&gt;
+]
+
+---
+
+# Practice
+
+Using `house_prices`, perform *all steps from the regression analysis* of **bedrooms** (*x*) and **price** (*y*), but use `waterfront` as the *x* variable *instead*. 
+
+- What do you notice about how `lm()` reports information for a **categorical explanatory variable**?
+
+---
+
+# EDA: Summary Statistics
+
+
+```r
+favstats(price ~ waterfront, data = house_prices)
+```
+
+```
+##   waterfront    min     Q1  median      Q3     max      mean        sd     n
+## 1      FALSE  75000 320000  450000  639897 7700000  531563.6  341599.6 21450
+## 2       TRUE 285000 760000 1400000 2215000 7062500 1661876.0 1120371.7   163
+##   missing
+## 1       0
+## 2       0
+```
+
+---
+
+# EDA: Data Visualization
+
+
+```r
+gf_boxplot(price ~ waterfront, data = house_prices) + 
+  labs(x = "Waterfront home?", y = "Price (in $)")
+```
+
+&lt;img src="09-Basic_Regression_files/figure-html/unnamed-chunk-22-1.png" width="45%" /&gt;
+
+---
+
+# Linear Regression Model
+
+
+```r
+lm_waterfront = lm(price ~ waterfront, data = house_prices)
+get_regression_table(lm_waterfront)
+```
+
+```
+## # A tibble: 2 x 7
+##   term           estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept       531564.     2416.     220         0  526828.  536300.
+## 2 waterfrontTRUE 1130312.    27822.      40.6       0 1075778. 1184847.
+```
+
+`$$\widehat{price}=531564+1130312\cdot waterfrontTRUE$$`
+
+Okay... what does `waterfrontTRUE` mean?!
+
+---
+
+# Dummy Variables
+
+`$$\widehat{price}=531564+1130312\cdot waterfrontTRUE$$`
+
+When using a **categorical explanatory variable** in a regression model, the *estimated coefficient* corresponds to the **difference in means** between:
+
+- one level of the categorical explanatory variable, and
+- the *reference level* of the categorical explanatory variable (usualy the level that comes first *alphabetically*)
+
+--
+
+Because the `waterfront` variable takes *two levels* (`TRUE` and `FALSE`), the *reference level* is `FALSE`. 
+
+- `\(b_{1}=1130312\)`: Homes with a *waterfront view* will cost, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;1,130,312 more than *non-waterfront homes*. 
+
+- `\(b_{0}=531564\)`: Homes *without a waterfront view* (i.e., `waterfrontTRUE = 0`) will cost, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;531,564. 
+
+---
+
+# Back to Summary Statistics
+
+.pull-left[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; Waterfront &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Mean &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; $0.53 mil &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; $1.66 mil &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.pull-right[
+![](09-Basic_Regression_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# Back to Summary Statistics
+
+
+```r
+lm_waterfront = lm(price ~ waterfront, data = house_prices)
+get_regression_table(lm_waterfront)
+```
+
+```
+## # A tibble: 2 x 7
+##   term           estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept       531564.     2416.     220         0  526828.  536300.
+## 2 waterfrontTRUE 1130312.    27822.      40.6       0 1075778. 1184847.
+```
+
+
+```r
+mean(price ~ waterfront, data = house_prices)
+```
+
+```
+##     FALSE      TRUE 
+##  531563.6 1661876.0
+```
+
+**We knew the regression coefficients the whole time!!!**
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

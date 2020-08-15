@@ -1,0 +1,543 @@
+---
+title: "STAT 227: Statistical Design and Analysis"
+subtitle: "Basic Linear Regression"
+author: "Anthony Scotina"
+date: ""
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: my-theme.css
+    nature:
+      countIncrementalSlides: false
+      highlightLines: true
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(base_color = "#43418A")
+```
+
+```{r, include = FALSE}
+library(tidyverse)
+library(mosaic)
+library(moderndive)
+library(skimr)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+                      echo = TRUE, dpi = 300)
+```
+
+<!--
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/08-Linear_Regression/08-Linear_Regression.html")
+-->
+
+# Data Modeling
+
+Two purposes for modeling:
+
+1. **Modeling for prediction**: You want to *predict* the outcome variable $y$ based on information contained in the predictor variable(s).
+    - *Example*: predicting risk of heart disease using age, weight, BMI, etc.
+    
+    - *Example*: Disney+ trying to predict the next movie you'll watch
+
+2. **Modeling for explanation**: You want to describe the *relationship* between the outcome variable $y$ and the explanatory/predictor variable(s). 
+    - *Example*: describe the relationship between a new treatment and risk of heart disease
+    
+    - *Example*: Disney+ trying to see the effect of time of day on movie selection
+
+---
+
+# Linear Regression
+
+There are *many* ways to model data. In this module, we will focus on **linear regression**. 
+
+**Linear regression modeling** involves:
+
+- a **numerical** outcome variable $y$, and
+
+- explanatory variable(s) $x$ that are either *numerical* or *categorical*
+
+--
+
+The **model** follows this form: $$\hat{y}=b_{0}+b_{1}\cdot x$$
+where:
+
+- $\hat{y}$ is the **predicted** value of *y*
+
+- $b_{0}$ and $b_{1}$ are **coefficients** (more on these later)
+
+---
+
+# Needed Packages
+
+```{r}
+library(tidyverse)
+library(moderndive)
+library(mosaic)
+```
+
+---
+
+class: center, middle, frame
+
+# One Numerical Explanatory Variable
+
+---
+
+# Motivating Example
+
+What factors explain the differences in house prices in Washington state?
+
+The `house_prices` dataset in the `moderndive` package contains data on a sample of 21,613 homes sold in King County, Washington between May 2014 and May 2015. 
+
+```{r, eval = FALSE}
+View(house_prices)
+```
+
+--
+
+**Outcome** variable (*y*): `price` (price of the house when sold, in USD)
+
+**Explanatory** variable (*x*): `bedrooms` (number of bedrooms)
+
+--
+
+**"Research" question**: Could it be that more expensive homes have more bedrooms?!
+
+---
+
+# EDA: Summary Statistics
+
+```{r, eval = FALSE}
+favstats( ~ price, data = house_prices)
+favstats( ~ bedrooms, data = house_prices)
+```
+
+The summary statistics give us a snapshot at the *univariate* distribution for each variable:
+
+- The **mean** house price is <span>&#36;</span>540,088.14 with a *standard deviation* of <span>&#36;</span>367,127.20. 
+    - As you might imagine, this is a very **right-skewed** variable (median price is <span>&#36;</span>450,000). 
+    
+- The **mean** number of bedrooms per home is 3.37 with a *standard deviation of 0.93. 
+    - This is actually a (roughly) symmetrical variable, save for the house with **THIRTY THREE** (33) bedrooms!!!
+    
+--
+
+Note that these are all **univariate** summaries, i.e., summaries about *single variables*.
+
+Let's review a statistic that quantifies the relationship *between* two variables. 
+
+---
+
+# Correlation Coefficient
+
+The **correlation coefficient** (*r*) is a *bivariate* summary statistic. 
+
+- summarizes the strength of the **linear** relationship between two *numerical* variables. 
+
+- ranges from -1 to 1
+
+--
+
+- -1 indicates a **perfect negative** *linear* relationship: as the value of one variable goes up, the value of the other variable tends to go down.
+
+- 0 indicates **no linear relationship**: the values of both variables go up/down independently of each other.
+
+- +1 indicates a **perfect positive** *linear* relationship: as the value of one variable goes up, the value of the other variable tends to go up as well.
+
+---
+
+# Correlation Coefficient in R
+
+We can use the `cor()` function in the `mosaic` package:
+```{r}
+cor(price ~ bedrooms, data = house_prices)
+```
+
+- $r=0.31$: There is a *weak-to-moderate* **linear** relationship between house price and bedrooms per home. 
+
+**Reminder**: All the correlation coefficient shows us is the *strength* and *direction* of the *linear* relationship. **That's it**. 
+- The 0.31 is *not* on the same scale as *x* or *y*. 
+
+---
+
+# Data Visualization
+
+Because `price` and `bedrooms` are both **numerical**, a **scatterplot** would be useful in visualizing their relationship. 
+```{r, out.width = "40%", message = FALSE}
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+---
+
+# `gf_point() + geom_smooth()`
+
+```{r, eval = FALSE}
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+**Notes**
+
+- `gf_point(y ~ x)` produces a **scatterplot**
+
+- `geom_smooth(method = "lm", se = FALSE)` overlays the **regression line** *without* error bands (try `se = TRUE` to see what I mean). 
+
+---
+
+# Taking care of the outlier...
+
+It is reasonable to suspect that the **outlier** with 33 bedrooms is *not representative* of the population in the same way that the rest of the sample is. 
+
+- Let's remove the outlier to see if `bedrooms` and `price` are more *linearly related*:
+
+```{r}
+outlier_index = which(house_prices$bedrooms == 33) #15871
+house_prices_new = 
+  house_prices[-outlier_index, ]
+```
+
+- This removes the 15,871st row, which contains the outlier, from the data. 
+
+---
+
+# (New) Data Visualization
+
+```{r, out.width = "45%"}
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+- Even after removing the outlier, there isn't a clear linear relationship between `price` and `bedrooms`. 
+
+---
+
+class: center, middle, frame
+
+# Simple Linear Regression
+
+---
+
+# The Linear Model
+
+The points in a scatterplot usually don't line up perfectly. 
+
+- Perfect correlations of +1 or -1 never happen. 
+
+Using a scatterplot with two strongly correlated variables, you can easily sketch a straight line that summarizes the data pretty well.
+
+A **linear model** gives an equation of a straight line through the data. 
+
+---
+
+# Linear Model
+
+```{r, echo = FALSE, message = FALSE, out.width = "45%"}
+apt <- data.frame(
+  size = c(400,500,550,600,600,700,850,1000,1050,1250), 
+  rent = c(400,600,450,500,550,525,600,800,750,1000)
+  )
+ggplot(apt, aes(size, rent)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  theme_bw() + 
+  labs(x = "Apartment Size (in sq. ft.)", y = "Rent (in $)") 
+```
+
+---
+
+# Non-linear Model
+
+```{r, echo = FALSE, message = FALSE, out.width = "45%"}
+ggplot(apt, aes(size, rent)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) + 
+  theme_bw() + 
+  labs(x = "Apartment Size (in sq. ft.)", y = "Rent (in $)") 
+```
+
+---
+
+# Non-linear Model
+
+```{r, echo = FALSE, message = FALSE, out.width = "45%"}
+ggplot(apt, aes(size, rent)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ poly(x, 6), se = FALSE) + 
+  theme_bw() + 
+  labs(x = "Apartment Size (in sq. ft.)", y = "Rent (in $)") 
+```
+
+---
+
+# A (bad) Model
+
+```{r, echo = FALSE, out.width = "45%"}
+ggplot(apt, aes(size, rent)) + 
+  geom_point() + 
+  geom_line(color = "blue", lwd = 1) + 
+  theme_bw() + 
+  labs(x = "Apartment Size (in sq. ft.)", y = "Rent (in $)") 
+```
+
+---
+
+# Models
+
+In statistics, a **model** is a summary and simplification of data that help our understanding in many ways. 
+
+A **linear model** uses sample data to generate a *line of best fit*...
+- ...that is used to help our understanding of the linear relationship between $x$ and $y$. 
+
+- Our model will be *wrong* (i.e., our line won't match reality *perfectly*). 
+
+- But hopefully, it is still useful!
+
+---
+
+# A Good Quote
+
+.pull-left[
+> *All models are wrong, but some are useful.*
+
+- George Box, famous statistician
+]
+
+.pull-right[
+```{r, echo = FALSE, out.width = "75%"}
+knitr::include_graphics("box.jpg")
+```
+]
+
+---
+
+# Simple Linear Regression Model
+
+A **simple linear regression model** follows the form of an *equation of a straight line*:
+$$\hat{y}=b_{0}+b_{1}\cdot x$$
+
+- The $\hat{y}$ denotes the **predicted outcome variable**. 
+    
+- The **intercept coefficient** is $b_{0}$, or the value of $\hat{y}$ when $x=0$.
+
+- The **slope coefficient** is $b_{1}$, or the *average* change in $\hat{y}$ for every one-unit increase in $x$.
+
+---
+
+# Regression Coefficients
+
+.pull-left[
+```{r, echo = FALSE}
+xyplot(price ~ bedrooms, data = house_prices_new,
+       xlab = "Bedrooms per home", ylab = "Price (in $)", 
+       pch = 20, col = "steelblue", type = c("p", "r"), 
+       jitter.x = TRUE, alpha = 0.3)
+```
+]
+
+.pull-right[
+Because $x=bedrooms$ and $y=price$, the regression equation is
+$$\widehat{price} = b_{0}+b_{1}\cdot bedrooms$$
+- Do you think the slope will be *positive* or *negative*?
+]
+
+---
+
+# Regression Coefficients
+
+But what are the *specific values* of the regression coefficients, $b_{0}$ and $b_{1}$?
+
+- Luckily, R can calculate these for us, by using the `lm()` function.
+
+```{r}
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+---
+
+# Regression Coefficients
+
+```{r, eval = FALSE}
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+In R, `lm()` stands for **L**inear **M**odel. 
+
+- Similar to `aov()` when conducting an **ANOVA**, we *assigned* `lm()` to an object (`lm_house`). 
+
+- The `get_regression_table()` function in the `moderndive` package gives the estimated **coefficients** (under the `estimate` column), along with other important information. 
+
+---
+
+# The Estimated Linear Model
+
+```{r}
+lm_house = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_house)
+```
+
+- The **intercept** coefficient is $b_{0}=110316$. 
+- The **slope** coefficient is $b_{1}=127548$. 
+
+Therefore, $$\widehat{price} = 110316 + 127548\cdot bedrooms$$
+
+---
+
+# Interpreting the Regression Coefficients
+
+The **intercept** $b_{0}=110316$. 
+
+- This means that the **average** price is <span>&#36;</span>110,316 for homes with 0 *bedrooms*.     
+    - The intercept often doesn't make sense in context, but it does make sense here (e.g., studio apartments?). 
+
+--
+
+The **slope** $b_{1}=127548$. 
+
+- This means that, for every additional `bedroom`, there is an associated increase of, **on average**, <span>&#36;</span>127,548 on the price of the home. 
+    - The slope is usually of more interest to us than the intercept. 
+
+---
+
+# Predicting House Price
+
+We can also use the equation of the linear model to **predict** the outcome (*y*) for a given value of *x*.
+
+For example, let's predict the *price* of a home with *three bedrooms*: $$\widehat{price} = 110316 + 127548\cdot bedrooms= 110316 + 127548\cdot 3=492960$$
+
+--
+
+The **linear model** predicts that a house with *three bedrooms* will cost <span>&#36;</span>492,960. 
+
+---
+
+class: center, middle, frame
+
+# One Categorical Explanatory Variable
+
+---
+
+# Motivating Example
+
+Do you think that **waterfront homes** are typically *more expensive* than **non-waterfront homes**?
+
+--
+
+.pull-left[
+**Waterfront Home**
+```{r, echo = FALSE}
+knitr::include_graphics("waterfront_seattle.jpg")
+```
+]
+
+.pull-right[
+**Non-waterfront Home**
+```{r, echo = FALSE}
+knitr::include_graphics("nonwaterfront.jpg")
+```
+]
+
+---
+
+# Practice
+
+Using `house_prices`, perform *all steps from the regression analysis* of **bedrooms** (*x*) and **price** (*y*), but use `waterfront` as the *x* variable *instead*. 
+
+- What do you notice about how `lm()` reports information for a **categorical explanatory variable**?
+
+---
+
+# EDA: Summary Statistics
+
+```{r}
+favstats(price ~ waterfront, data = house_prices)
+```
+
+---
+
+# EDA: Data Visualization
+
+```{r, out.width = "45%"}
+gf_boxplot(price ~ waterfront, data = house_prices) + 
+  labs(x = "Waterfront home?", y = "Price (in $)")
+```
+
+---
+
+# Linear Regression Model
+
+```{r}
+lm_waterfront = lm(price ~ waterfront, data = house_prices)
+get_regression_table(lm_waterfront)
+```
+
+$$\widehat{price}=531564+1130312\cdot waterfrontTRUE$$
+
+Okay... what does `waterfrontTRUE` mean?!
+
+---
+
+# Dummy Variables
+
+$$\widehat{price}=531564+1130312\cdot waterfrontTRUE$$
+
+When using a **categorical explanatory variable** in a regression model, the *estimated coefficient* corresponds to the **difference in means** between:
+
+- one level of the categorical explanatory variable, and
+- the *reference level* of the categorical explanatory variable (usualy the level that comes first *alphabetically*)
+
+--
+
+Because the `waterfront` variable takes *two levels* (`TRUE` and `FALSE`), the *reference level* is `FALSE`. 
+
+- $b_{1}=1130312$: Homes with a *waterfront view* will cost, **on average**, <span>&#36;</span>1,130,312 more than *non-waterfront homes*. 
+
+- $b_{0}=531564$: Homes *without a waterfront view* (i.e., `waterfrontTRUE = 0`) will cost, **on average**, <span>&#36;</span>531,564. 
+
+---
+
+# Back to Summary Statistics
+
+.pull-left[
+```{r, echo = FALSE}
+knitr::kable(data.frame(Waterfront = c("TRUE", "FALSE"), 
+                        Mean = c("$0.53 mil", "$1.66 mil")), 
+             format = "html", align = "c")
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+ggplot(house_prices, aes(x = waterfront, y = price, fill = waterfront)) + 
+  geom_bar(stat = "summary", fun.y = "mean") + 
+  labs(x = "Waterfront?", y = "Average Price (in $)") + 
+  theme_bw() + 
+  theme(legend.position = "none")
+```
+]
+
+---
+
+# Back to Summary Statistics
+
+```{r}
+lm_waterfront = lm(price ~ waterfront, data = house_prices)
+get_regression_table(lm_waterfront)
+```
+
+```{r}
+mean(price ~ waterfront, data = house_prices)
+```
+
+**We knew the regression coefficients the whole time!!!**
+
+
+
+
+

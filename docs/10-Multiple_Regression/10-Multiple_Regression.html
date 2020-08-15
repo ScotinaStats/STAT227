@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Multiple Regression
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+&lt;!--
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/08-Linear_Regression/08-Linear_Regression.html")
+--&gt;
+
+# Needed Packages
+
+
+```r
+library(tidyverse)
+library(moderndive)
+library(mosaic)
+```
+
+And from the last module...
+
+
+```r
+# Remove outlier
+outlier_index = which(house_prices$bedrooms == 33) #15871
+house_prices_new = 
+  house_prices[-outlier_index, ]
+```
+
+---
+
+class: center, middle, frame
+
+# Multiple Regression
+
+---
+
+# Multiple Regression
+
+**Does bedrooms per house give us the full story?**
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-4-1.png" width="50%" /&gt;
+
+---
+
+# Multiple Regression
+
+**Does bedrooms per house give us the full story?**
+
+- *No.*
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-5-1.png" width="50%" /&gt;
+
+---
+
+# Multiple Regression
+
+**So far**, we have looked at the following *linear regression models* using the `house_prices_new` data:
+
+- `\(\widehat{price} = 110316 + 127548*(bedrooms)\)`
+    - For every additional `bedroom`, there is an associated increase of, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;127,548 on the price of the home. 
+
+--
+
+- `\(\widehat{price} = 531559 + 1130317*(waterfrontTRUE)\)`
+    - Homes with a *waterfront view* will cost, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;1,130,317 more than *non-waterfront homes*. 
+
+--
+
+**Why not all at once?**
+
+- `\(\widehat{price} = b_{0}+b_{1}*(bedrooms)+b_{2}*(waterfrontTRUE)\)`
+
+---
+
+# Why multiple regression?
+
+It is rare to have a single explanatory (*x*) variable in a study. 
+
+- A *more complex model* can frequently help with **prediction**. 
+
+- The **multiple regression model** is of the form `$$\hat{y}=b_{0}+b_{1}x_{1}+b_{2}x_{2}+\cdots+b_{k}x_{k}$$`
+where there are `\(k\)` explanatory variables. 
+
+---
+
+# One Categorical AND One Explanatory Variable
+
+`$$\widehat{price} = b_{0}+b_{1}*(bedrooms)+b_{2}*(waterfrontTRUE)$$`
+
+**Question**: Does the *association* between `price` and `bedrooms` change when *simultaneously* considering homes with a *waterfront view*?
+
+--
+
+In this **multiple regression** model, we have:
+
+- A **numerical** response variable (*y*), the price of a home
+
+- *Two* **explanatory variables**:
+    - A *numerical explanatory variable*, `\(x_{1}\)`, the number of bedrooms per home
+    - A *categorical explanatory variable*, `\(x_{2}\)`, whether or not the home has a waterfront view
+    
+---
+
+# EDA: Data Visualization
+
+
+```r
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-6-1.png" width="50%" /&gt;
+
+---
+
+# EDA: Data Visualization
+
+.pull-left[
+![](10-Multiple_Regression_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+**Some observations**
+
+- Both slopes are **positive**. 
+
+- But, the slope for *waterfront view homes* is **more positive**. 
+
+In other words, the average house price per bedroom is *higher* for *waterfront view homes*. 
+]
+
+---
+
+# Interaction Model
+
+We will quantify the relationship between the response *y* and the *two* explanatory variables using a type of multiple regression model known as an **interaction model**. 
+
+
+```r
+lm_price_interaction = lm(price ~ bedrooms + waterfront + 
+                            bedrooms*waterfront, 
+                          data = house_prices_new)
+get_regression_table(lm_price_interaction)
+```
+
+```
+## # A tibble: 4 x 7
+##   term                    estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept                114143.     8725.     13.1    0       97042.  131245.
+## 2 bedrooms                 123862.     2500.     49.5    0      118962.  128763.
+## 3 waterfrontTRUE          -236296.    84425.     -2.80   0.005 -401775.  -70817.
+## 4 bedrooms:waterfrontTRUE  416652.    24320.     17.1    0      368982.  464322.
+```
+
+In this **interaction model**, the model formula was not only of the form `y ~ x1 + x2`, but it included an **interaction term**, `x1*x2`. 
+
+---
+
+# Interaction Model
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; term &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; estimate &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; std_error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; lower_ci &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; upper_ci &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; intercept &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 114143.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8724.783 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 97042.24 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 131244.68 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bedrooms &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 123862.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2500.081 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 118961.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 128762.61 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; waterfrontTRUE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -236296.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 84424.858 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -401774.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -70817.08 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bedrooms:waterfrontTRUE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 416652.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24320.288 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 368982.41 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 464321.53 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+First, recall that *non-waterfront homes* (`waterfront = FALSE`) serves as the **reference** (or *baseline*) group. 
+- Therefore, the `intercept` term is the **intercept** *for only the non-waterfront homes*. 
+
+- Similarly, the `bedrooms` term is the **slope** *for only the non-waterfront homes*.
+
+What about the slope and intercept for *waterfront homes*?
+
+---
+
+# Linear Model Equation
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; term &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; estimate &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; std_error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; lower_ci &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; upper_ci &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; intercept &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 114143.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8724.783 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 97042.24 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 131244.68 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bedrooms &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 123862.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2500.081 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 118961.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 128762.61 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; waterfrontTRUE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -236296.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 84424.858 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -401774.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -70817.08 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bedrooms:waterfrontTRUE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 416652.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24320.288 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 368982.41 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 464321.53 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+We can write the equation of the linear model *with interaction term* as 
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+---
+
+# Interaction Model
+
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+The value for `waterfrontTRUE` of `\(-236296\)` is *not* the intercept for waterfront homes.
+- Rather, it serves as the **offset** in the intercept for waterfront homes *relative to non-waterfront homes*. 
+
+- The *intercept* for *waterfront homes* is `intercept` + `waterfrontTRUE` = `\(114143-236296\)` = `\(-122153\)`.
+
+--
+
+**Uhhh wut?**
+
+- I thought waterfront homes were *more expensive*!!!
+
+---
+
+# The Interaction Term
+
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+The `bedrooms:waterfrontTRUE` is *not* the slope for age for waterfront homes. 
+- Rather, it serves as the **offset** in the slope for waterfront homes. 
+
+The *slope* for *waterfront* homes is `bedrooms` + `bedrooms:waterfrontTRUE` = `\(123862+416652\)` = `\(540514\)`. 
+
+---
+
+# Putting It All Together
+
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+Because there are *two levels* of the categorical explanatory variable (`TRUE` and `FALSE`), we can write the regression model as equations for *two separate regression lines*:
+
+- For `waterfront = TRUE`, `$$\widehat{price}=-122153+540514(bedrooms)$$`
+- For `waterfront = FALSE`, `$$\widehat{price}=114143+123862(bedrooms)$$`
+
+---
+
+# Putting It All Together
+
+.pull-left[
+![](10-Multiple_Regression_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+- For `waterfront = TRUE`, `$$\widehat{price}=-122153+540514(bedrooms)$$`
+- For `waterfront = FALSE`, `$$\widehat{price}=114143+123862(bedrooms)$$`
+]
+
+---
+
+# Interpreting the Regression Lines
+
+For `waterfront = TRUE`, `$$\widehat{price}=-122153+540514(bedrooms)$$`
+
+- For **homes with a waterfront view**: For every additional `bedroom`, there is an associated increase of, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;540,514 on the price of the home. 
+
+--
+
+For `waterfront = FALSE`, `$$\widehat{price}=114143+123862(bedrooms)$$`
+
+- For **homes without a waterfront view**: For every additional `bedroom`, there is an associated increase of, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;123,862 on the price of the home. 
+
+--
+
+Thus, our model is suggesting that the number of bedrooms impacts the price of *waterfront homes* **more** than it does for *non-waterfront homes*. 
+
+---
+
+# Summary of Interaction Model
+
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+- `\(b_{0}=114143\)` is the `intercept` for *non-waterfront homes*.
+
+- `\(b_{1}=123862\)` is the slope for `bedrooms` for *non-waterfront homes*.
+
+- `\(b_{2}=-236296\)` is the **offset** in the intercept for *waterfront homes*. 
+
+- `\(b_{3}=416652\)` is the **offset** in the slope for *waterfront homes*. 
+
+---
+
+# Back to Interaction Effects
+
+Why do we call that additional term the **interaction effect**?
+
+- We say there is an interaction effect if the *associated effect* of one variable *depends* on the value of another variable. In other words, the two variables are “*interacting*” with each other.
+
+--
+
+For a given home in King County, WA, there might be an associated effect of `bedrooms` *by itself*. 
+
+There might also be an associated effect of `waterfront` homes *by itself*. 
+
+- **But** when `bedrooms` and `waterfront` homes are considered *together*, there might be *an additional effect* beyond those present when considering the variables separately. 
+
+---
+
+class: center, middle, frame
+
+# Parallel Slopes Model
+
+---
+
+# Parallel Slopes Model
+
+When creating **multiple regression models** with *one numerical* and *one categorical* explanatory variable, we are *not* limited to models with an **interaction effect**. 
+
+- Another type of model we can use is known as the **parallel slopes model**. 
+
+--
+
+While **interaction models** can have regression lines with *different slopes and intercepts*, parallel slopes models *force* all lines to have the **same slope**. 
+
+---
+
+# Visualizing Parallel Slopes
+
+The `geom_parallel_slopes()` function in the `moderndive` package provides one way to plot a **parallel slopes model**. 
+
+
+```r
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_parallel_slopes() + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-12-1.png" width="35%" /&gt;
+
+- **Note**: The *parallel regression lines* are not necessarily the **lines of best fit**!
+
+---
+
+# Parallel Slopes Model
+
+.pull-left[
+![](10-Multiple_Regression_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+Here, waterfront and non-waterfront homes have the *same slope*. 
+
+- They still have *different intercepts*, which is why the lines are at different heights. 
+
+- Irrespective of the number of bedrooms, *waterfront homes* tended to be more expensive than *non-waterfront homes*, on average. 
+]
+
+---
+
+# Fitting the Parallel Slopes Model
+
+
+```r
+lm_price_parallel = lm(price ~ bedrooms + waterfront, 
+                       data = house_prices_new)
+get_regression_table(lm_price_parallel)
+```
+
+```
+## # A tibble: 3 x 7
+##   term           estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept        99306.     8740.      11.4       0   82174.  116437.
+## 2 bedrooms        128265.     2504.      51.2       0  123358.  133172.
+## 3 waterfrontTRUE 1139217.    26274.      43.4       0 1087717. 1190716.
+```
+
+The equation for the linear model is: `$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$`
+
+---
+
+# Interpreting the Coefficients
+
+`$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$`
+
+The coefficients `\(b_{0}=99306\)` and `\(b_{2}=1139217\)` acts as they did in the *interaction model*: 
+
+- `\(b_{0}=99306\)` is the `intercept` for *non-waterfront homes*.
+    - The **average** price is &lt;span&gt;&amp;#36;&lt;/span&gt;99,306 for *non-waterfront homes* with 0 *bedrooms*.
+
+--
+
+- `\(b_{2}=1139217\)` is the **offset** in the intercept for *waterfront homes*. 
+    - The **average** price is &lt;span&gt;&amp;#36;&lt;/span&gt;99,306+&lt;span&gt;&amp;#36;&lt;/span&gt;1,139,217 = &lt;span&gt;&amp;#36;&lt;/span&gt;1,238,523 for *waterfront homes* with 0 *bedrooms*. 
+
+---
+
+# Interpreting the Coefficients
+
+`$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$`
+
+Unlike in the *interaction model*, there is only one slope term in the *parallel slopes model*:
+
+- `\(b_{1}=128265\)` is the slope for *waterfront* **and** *non-waterfront homes*. 
+    - **Holding** `waterfront` **fixed** (i.e., for *one level of* `waterfront`): For every additional `bedroom`, there is an associated increase of, **on average**, &lt;span&gt;&amp;#36;&lt;/span&gt;128,265 on the price of the home. 
+
+---
+
+# Parallel Slopes Model
+
+`$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$`
+
+For *waterfront homes*: `$$\widehat{price}=1238523+\underline{128265}(bedrooms)$$`
+
+For *non-waterfront homes*: `$$\widehat{price}=99306+\underline{128265}(bedrooms)$$`
+
+---
+
+# Comparing the Models
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-15-1.png" width="50%" /&gt;&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-15-2.png" width="50%" /&gt;
+
+So... why would we *ever* use a **parallel slopes model**?
+- The lines in the left-hand plot don't look parallel, so why force them to be?
+- We'll get back to this, but as a short answer: Sometimes **simple** is better!
+
+---
+
+class: center, middle, frame
+
+# Two (or more) Numerical Explanatory Variables
+
+---
+
+# Two Numerical Explanatory Variables
+
+Instead of examining a model with *one numerical* and *one categorical* explanatory, let's look at a model with **two numerical explanatory variables**. 
+
+Using the `house_prices_new` data:
+
+- *y* = `price`
+
+- `\(x_{1}\)` = `bedrooms`
+
+- `\(x_{2}\)` = `sqft_living` (square footage of the home, from `?house_prices`)
+
+In other words, we will fit the model: `$$\widehat{price} = b_{0}+b_{1}(bedrooms)+b_{2}(sqft.living)$$`
+
+---
+
+# Correlation Matrix
+
+Because we have several **numerical** variables, we can calculate several pairwise **correlation coefficients**. 
+- (Recall that one cannot calculate a correlation coefficient with categorical variables.)
+
+While we could do this with `cor()` several times depending on the number of comparisons, it is much more efficient to construct a **correlation matrix**:
+
+
+```r
+house_prices_new %&gt;%
+  select(price, bedrooms, sqft_living) %&gt;%
+  cor()
+```
+
+```
+##                 price  bedrooms sqft_living
+## price       1.0000000 0.3154449   0.7020466
+## bedrooms    0.3154449 1.0000000   0.5914672
+## sqft_living 0.7020466 0.5914672   1.0000000
+```
+
+---
+
+# Correlation Matrix
+
+
+```r
+house_prices_new %&gt;%
+  select(price, bedrooms, sqft_living) %&gt;%
+  cor()
+```
+
+```
+##                 price  bedrooms sqft_living
+## price       1.0000000 0.3154449   0.7020466
+## bedrooms    0.3154449 1.0000000   0.5914672
+## sqft_living 0.7020466 0.5914672   1.0000000
+```
+
+- `\(r(price,bedrooms)=0.32\)`. 
+
+--
+
+- `\(r(price, sqft.living)=0.70\)` means that there is a *relatively strong*, positive, linear correlation between price per home and square footage of the home. 
+
+--
+
+- `\(r(bedrooms, sqft.living)=0.59\)` means that there is a *moderate*, positive, linear correlation between number of bedrooms per home and square footage of the home. 
+    - When two **explanatory variables** are correlated, we say that there is a high degree of **multicollinearity**. 
+
+---
+
+# EDA: Data Visualizations
+
+.pull-left[
+
+```r
+gf_point(price ~ sqft_living, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Square Footage of Home", y = "Price (in $)")
+```
+
+![](10-Multiple_Regression_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+gf_point(sqft_living ~ bedrooms, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Number of Bedrooms", y = "Square Footage of Home")
+```
+
+![](10-Multiple_Regression_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# Fitting the Model
+
+To fit a model of this form in R, we use `lm()` exactly as we did in previous examples:
+
+
+```r
+lm_multiple = lm(price ~ bedrooms + sqft_living, data = house_prices_new)
+get_regression_table(lm_multiple)
+```
+
+```
+## # A tibble: 3 x 7
+##   term        estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept     90034.   6733.        13.4       0   76836.  103231.
+## 2 bedrooms     -62062.   2392.       -25.9       0  -66751.  -57372.
+## 3 sqft_living     317.      2.37     134.        0     312.     322.
+```
+
+The equation of the *regression plane* is: `$$\widehat{price}=90034-62062(bedrooms)+317(sqft.living)$$`
+
+---
+
+# Interpreting the Regression Coefficients
+
+`$$\widehat{price}=90034-62062(bedrooms)+317(sqft.living)$$`
+
+- `\(b_{0}=90034\)`: The average price is &lt;span&gt;&amp;#36;&lt;/span&gt;90,034 for homes with *0 bedrooms* **AND** *0 square footage of space*. 
+    - This doesn't make sense in context; using `sqft_living=0` is **extrapolation**!
+
+- `\(b_{1}=-62062\)`: *Taking all other variables in our model into account* (i.e., holding them fixed), for every additional bedroom, there is an associated **decrease** of &lt;span&gt;&amp;#36;&lt;/span&gt;62,062 in price per home, on average. 
+
+- `\(b_{2}=317\)`: *Taking all other variables in our model into account*, for every additional square foot of living space, there is an associated **increase** of &lt;span&gt;&amp;#36;&lt;/span&gt;317 in price per home, on average. 
+
+---
+
+# Interpreting the Regression Coefficients
+
+To better understand what these interpretations mean, let's consider a **simple regression model** and a **multiple regression model** side-by-side:
+
+
+```r
+lm_simple = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_simple)
+```
+
+```
+## # A tibble: 2 x 7
+##   term      estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept  110316.     9108.      12.1       0   92462.  128169.
+## 2 bedrooms   127548.     2610.      48.9       0  122432.  132664.
+```
+
+```r
+lm_multiple = lm(price ~ bedrooms + sqft_living, data = house_prices_new)
+get_regression_table(lm_multiple)
+```
+
+```
+## # A tibble: 3 x 7
+##   term        estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept     90034.   6733.        13.4       0   76836.  103231.
+## 2 bedrooms     -62062.   2392.       -25.9       0  -66751.  -57372.
+## 3 sqft_living     317.      2.37     134.        0     312.     322.
+```
+
+---
+
+# Interpreting the Regression Coefficients
+
+- **Simple**: `\(\widehat{price}=110316+127548(bedrooms)\)`
+- **Multiple**: `\(\widehat{price}=90034-62062(bedrooms)+317(sqft.living)\)`
+
+Introducing `sqft_living` into the model yielded a `\(b_{1}\)` coefficient with **opposite sign**!
+- Changed from `\(127548\)` to `\(-62062\)`
+
+--
+
+In the multiple regression model, the estimated coefficient `\(b_{1}=-62062\)` does not mean that homes with *more bedrooms* are generally *worth less*. 
+- It must be interpreted while taking into account the *other explanatory variable* (`sqft_living`). 
+
+--
+
+Let's consider a home with a *fixed amount of living area*:
+- Those which devote more area to bedrooms must either (a) have smaller bedrooms; or (b) have less living area
+- This could reduce the home's value!
+
+---
+
+class: center, middle, frame
+
+# Model Selection
+
+---
+
+# Model Selection
+
+**When do we use an interaction model or a parallel slopes model?!**
+
+- If *lines of best fit* based on different levels of explanatory variables aren't *parellel*, why would we **force** them to be parallel?
+
+&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-22-1.png" width="40%" /&gt;&lt;img src="10-Multiple_Regression_files/figure-html/unnamed-chunk-22-2.png" width="40%" /&gt;
+
+---
+
+# Model Selection
+
+Sometimes, **simpler** solutions are more likely to be *correct* than **complex** solutions. 
+
+Using `price` as the response:
+
+- The **interaction model** was
+`\begin{align*}
+\widehat{price}&amp;=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&amp;\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}`
+
+- The **parallel slopes model** was `$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$`
+
+--
+
+The interaction model is more *complex* due to the extra ( `\(b_{3}=416652\)`) term. 
+
+- Is the *extra complexity* warranted?
+
+- (Arguably, yes. But let's look at an example where it is less obvious...)
+
+---
+
+# `MA_schools`
+
+The `MA_schools` dataset in the `moderndive` package contains data on MA public high schools in 2017. 
+
+
+```r
+View(MA_schools)
+?MA_schools
+```
+
+We will model `average_sat_math` (*y*) as a function of:
+
+- `perc_disadvan` ( `\(x_{1}\)`): percent of study body considered "economically disadvantaged"
+
+- `size` ( `\(x_{2}\)`): size of enrollment (`small`, `medium`, `large`)
+
+---
+
+# Comparing the Models
+
+At least visually, the models don't appear very different!
+- Now let's compare the **regression tables**. 
+
+--
+
+
+```r
+lm_mass_int = lm(average_sat_math ~ perc_disadvan + size + 
+                   perc_disadvan*size, 
+                 data = MA_schools)
+get_regression_table(lm_mass_int)
+```
+
+```
+## # A tibble: 6 x 7
+##   term                    estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept                594.       13.3      44.7     0      568.     620.   
+## 2 perc_disadvan             -2.93      0.294    -9.96    0       -3.51    -2.35 
+## 3 sizemedium               -17.8      15.8      -1.12    0.263  -48.9     13.4  
+## 4 sizelarge                -13.3      13.8      -0.962   0.337  -40.5     13.9  
+## 5 perc_disadvan:sizemedi…    0.146     0.371     0.393   0.694   -0.585    0.877
+## 6 perc_disadvan:sizelarge    0.189     0.323     0.586   0.559   -0.446    0.824
+```
+
+---
+
+# Interaction Model
+
+
+```
+## # A tibble: 6 x 7
+##   term                    estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept                594.       13.3      44.7     0      568.     620.   
+## 2 perc_disadvan             -2.93      0.294    -9.96    0       -3.51    -2.35 
+## 3 sizemedium               -17.8      15.8      -1.12    0.263  -48.9     13.4  
+## 4 sizelarge                -13.3      13.8      -0.962   0.337  -40.5     13.9  
+## 5 perc_disadvan:sizemedi…    0.146     0.371     0.393   0.694   -0.585    0.877
+## 6 perc_disadvan:sizelarge    0.189     0.323     0.586   0.559   -0.446    0.824
+```
+
+The interaction model is 
+`\begin{align*}
+  \widehat{avg.sat.math}&amp;=594-2.93(perc.disadvan)-17.8(size:medium)\\
+  &amp; \ \ \ \ -13.3(size:large)+0.146(perc.disadvan*size:medium)\\
+  &amp; \ \ \ \ +0.189(perc.disadvan*size:large)
+\end{align*}`
+
+---
+
+# Paraellel Slopes Model
+
+
+```r
+lm_mass_par = lm(average_sat_math ~ perc_disadvan + size, data = MA_schools)
+get_regression_table(lm_mass_par)
+```
+
+```
+## # A tibble: 4 x 7
+##   term          estimate std_error statistic p_value lower_ci upper_ci
+##   &lt;chr&gt;            &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 intercept       588.       7.61     77.3     0       573.     603.  
+## 2 perc_disadvan    -2.78     0.106   -26.1     0        -2.99    -2.57
+## 3 sizemedium      -11.9      7.54     -1.58    0.115   -26.7      2.91
+## 4 sizelarge        -6.36     6.92     -0.919   0.359   -20.0      7.26
+```
+
+The parallel slopes model is 
+`\begin{align*}
+  \widehat{avg.sat.math}&amp;=594-2.78(perc.disadvan)\\
+  &amp;\ \ \ \ -11.9(size:medium)-6.36(size:large)
+\end{align*}`
+
+---
+
+# Comparing the Models
+
+Among other things, the **offsets** for the different slopes in the *interaction model* are very small relative to baseline. 
+
+- `\(b_{3}=0.146\)` means that the slope for *medium* schools is only 0.146 points higher than baseline (-2.93). 
+
+- `\(b_{4}=0.189\)` means that the slope for *large* schools is only 0.189 points higher than baseline (-2.93).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

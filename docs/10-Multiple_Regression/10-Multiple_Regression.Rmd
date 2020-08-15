@@ -1,0 +1,712 @@
+---
+title: "STAT 227: Statistical Design and Analysis"
+subtitle: "Multiple Regression"
+author: "Anthony Scotina"
+date: ""
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: my-theme.css
+    nature:
+      countIncrementalSlides: false
+      highlightLines: true
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(base_color = "#43418A")
+```
+
+```{r, include = FALSE}
+library(tidyverse)
+library(mosaic)
+library(moderndive)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+                      echo = TRUE, dpi = 300)
+```
+
+<!--
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/08-Linear_Regression/08-Linear_Regression.html")
+-->
+
+# Needed Packages
+
+```{r}
+library(tidyverse)
+library(moderndive)
+library(mosaic)
+```
+
+And from the last module...
+
+```{r}
+# Remove outlier
+outlier_index = which(house_prices$bedrooms == 33) #15871
+house_prices_new = 
+  house_prices[-outlier_index, ]
+```
+
+---
+
+class: center, middle, frame
+
+# Multiple Regression
+
+---
+
+# Multiple Regression
+
+**Does bedrooms per house give us the full story?**
+
+```{r, echo = FALSE, out.width = "50%"}
+gf_point(price ~ bedrooms, color = "steelblue", data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)")
+```
+
+---
+
+# Multiple Regression
+
+**Does bedrooms per house give us the full story?**
+
+- *No.*
+
+```{r, echo = FALSE, out.width = "50%"}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+
+---
+
+# Multiple Regression
+
+**So far**, we have looked at the following *linear regression models* using the `house_prices_new` data:
+
+- $\widehat{price} = 110316 + 127548*(bedrooms)$
+    - For every additional `bedroom`, there is an associated increase of, **on average**, <span>&#36;</span>127,548 on the price of the home. 
+
+--
+
+- $\widehat{price} = 531559 + 1130317*(waterfrontTRUE)$
+    - Homes with a *waterfront view* will cost, **on average**, <span>&#36;</span>1,130,317 more than *non-waterfront homes*. 
+
+--
+
+**Why not all at once?**
+
+- $\widehat{price} = b_{0}+b_{1}*(bedrooms)+b_{2}*(waterfrontTRUE)$
+
+---
+
+# Why multiple regression?
+
+It is rare to have a single explanatory (*x*) variable in a study. 
+
+- A *more complex model* can frequently help with **prediction**. 
+
+- The **multiple regression model** is of the form $$\hat{y}=b_{0}+b_{1}x_{1}+b_{2}x_{2}+\cdots+b_{k}x_{k}$$
+where there are $k$ explanatory variables. 
+
+---
+
+# One Categorical AND One Explanatory Variable
+
+$$\widehat{price} = b_{0}+b_{1}*(bedrooms)+b_{2}*(waterfrontTRUE)$$
+
+**Question**: Does the *association* between `price` and `bedrooms` change when *simultaneously* considering homes with a *waterfront view*?
+
+--
+
+In this **multiple regression** model, we have:
+
+- A **numerical** response variable (*y*), the price of a home
+
+- *Two* **explanatory variables**:
+    - A *numerical explanatory variable*, $x_{1}$, the number of bedrooms per home
+    - A *categorical explanatory variable*, $x_{2}$, whether or not the home has a waterfront view
+    
+---
+
+# EDA: Data Visualization
+
+```{r, out.width = "50%"}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+
+---
+
+# EDA: Data Visualization
+
+.pull-left[
+```{r, echo = FALSE}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+]
+
+.pull-right[
+**Some observations**
+
+- Both slopes are **positive**. 
+
+- But, the slope for *waterfront view homes* is **more positive**. 
+
+In other words, the average house price per bedroom is *higher* for *waterfront view homes*. 
+]
+
+---
+
+# Interaction Model
+
+We will quantify the relationship between the response *y* and the *two* explanatory variables using a type of multiple regression model known as an **interaction model**. 
+
+```{r}
+lm_price_interaction = lm(price ~ bedrooms + waterfront + 
+                            bedrooms*waterfront, 
+                          data = house_prices_new)
+get_regression_table(lm_price_interaction)
+```
+
+In this **interaction model**, the model formula was not only of the form `y ~ x1 + x2`, but it included an **interaction term**, `x1*x2`. 
+
+---
+
+# Interaction Model
+
+```{r, echo = FALSE}
+knitr::kable(get_regression_table(lm_price_interaction)[,-c(4,5)], format = "html")
+```
+
+First, recall that *non-waterfront homes* (`waterfront = FALSE`) serves as the **reference** (or *baseline*) group. 
+- Therefore, the `intercept` term is the **intercept** *for only the non-waterfront homes*. 
+
+- Similarly, the `bedrooms` term is the **slope** *for only the non-waterfront homes*.
+
+What about the slope and intercept for *waterfront homes*?
+
+---
+
+# Linear Model Equation
+
+```{r, echo = FALSE}
+knitr::kable(get_regression_table(lm_price_interaction)[,-c(4,5)], format = "html")
+```
+
+We can write the equation of the linear model *with interaction term* as 
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+---
+
+# Interaction Model
+
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+The value for `waterfrontTRUE` of $-236296$ is *not* the intercept for waterfront homes.
+- Rather, it serves as the **offset** in the intercept for waterfront homes *relative to non-waterfront homes*. 
+
+- The *intercept* for *waterfront homes* is `intercept` + `waterfrontTRUE` = $114143-236296$ = $-122153$.
+
+--
+
+**Uhhh wut?**
+
+- I thought waterfront homes were *more expensive*!!!
+
+---
+
+# The Interaction Term
+
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+The `bedrooms:waterfrontTRUE` is *not* the slope for age for waterfront homes. 
+- Rather, it serves as the **offset** in the slope for waterfront homes. 
+
+The *slope* for *waterfront* homes is `bedrooms` + `bedrooms:waterfrontTRUE` = $123862+416652$ = $540514$. 
+
+---
+
+# Putting It All Together
+
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+Because there are *two levels* of the categorical explanatory variable (`TRUE` and `FALSE`), we can write the regression model as equations for *two separate regression lines*:
+
+- For `waterfront = TRUE`, $$\widehat{price}=-122153+540514(bedrooms)$$
+- For `waterfront = FALSE`, $$\widehat{price}=114143+123862(bedrooms)$$
+
+---
+
+# Putting It All Together
+
+.pull-left[
+```{r, echo = FALSE}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+]
+
+.pull-right[
+- For `waterfront = TRUE`, $$\widehat{price}=-122153+540514(bedrooms)$$
+- For `waterfront = FALSE`, $$\widehat{price}=114143+123862(bedrooms)$$
+]
+
+---
+
+# Interpreting the Regression Lines
+
+For `waterfront = TRUE`, $$\widehat{price}=-122153+540514(bedrooms)$$
+
+- For **homes with a waterfront view**: For every additional `bedroom`, there is an associated increase of, **on average**, <span>&#36;</span>540,514 on the price of the home. 
+
+--
+
+For `waterfront = FALSE`, $$\widehat{price}=114143+123862(bedrooms)$$
+
+- For **homes without a waterfront view**: For every additional `bedroom`, there is an associated increase of, **on average**, <span>&#36;</span>123,862 on the price of the home. 
+
+--
+
+Thus, our model is suggesting that the number of bedrooms impacts the price of *waterfront homes* **more** than it does for *non-waterfront homes*. 
+
+---
+
+# Summary of Interaction Model
+
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+- $b_{0}=114143$ is the `intercept` for *non-waterfront homes*.
+
+- $b_{1}=123862$ is the slope for `bedrooms` for *non-waterfront homes*.
+
+- $b_{2}=-236296$ is the **offset** in the intercept for *waterfront homes*. 
+
+- $b_{3}=416652$ is the **offset** in the slope for *waterfront homes*. 
+
+---
+
+# Back to Interaction Effects
+
+Why do we call that additional term the **interaction effect**?
+
+- We say there is an interaction effect if the *associated effect* of one variable *depends* on the value of another variable. In other words, the two variables are “*interacting*” with each other.
+
+--
+
+For a given home in King County, WA, there might be an associated effect of `bedrooms` *by itself*. 
+
+There might also be an associated effect of `waterfront` homes *by itself*. 
+
+- **But** when `bedrooms` and `waterfront` homes are considered *together*, there might be *an additional effect* beyond those present when considering the variables separately. 
+
+---
+
+class: center, middle, frame
+
+# Parallel Slopes Model
+
+---
+
+# Parallel Slopes Model
+
+When creating **multiple regression models** with *one numerical* and *one categorical* explanatory variable, we are *not* limited to models with an **interaction effect**. 
+
+- Another type of model we can use is known as the **parallel slopes model**. 
+
+--
+
+While **interaction models** can have regression lines with *different slopes and intercepts*, parallel slopes models *force* all lines to have the **same slope**. 
+
+---
+
+# Visualizing Parallel Slopes
+
+The `geom_parallel_slopes()` function in the `moderndive` package provides one way to plot a **parallel slopes model**. 
+
+```{r, message = FALSE, warning = FALSE, out.width = "35%"}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_parallel_slopes() + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+
+- **Note**: The *parallel regression lines* are not necessarily the **lines of best fit**!
+
+---
+
+# Parallel Slopes Model
+
+.pull-left[
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+gf_point(price ~ bedrooms, color = ~ waterfront, data = house_prices_new) + 
+  geom_parallel_slopes() + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", color = "Waterfront home?")
+```
+]
+
+.pull-right[
+Here, waterfront and non-waterfront homes have the *same slope*. 
+
+- They still have *different intercepts*, which is why the lines are at different heights. 
+
+- Irrespective of the number of bedrooms, *waterfront homes* tended to be more expensive than *non-waterfront homes*, on average. 
+]
+
+---
+
+# Fitting the Parallel Slopes Model
+
+```{r}
+lm_price_parallel = lm(price ~ bedrooms + waterfront, 
+                       data = house_prices_new)
+get_regression_table(lm_price_parallel)
+```
+
+The equation for the linear model is: $$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$
+
+---
+
+# Interpreting the Coefficients
+
+$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$
+
+The coefficients $b_{0}=99306$ and $b_{2}=1139217$ acts as they did in the *interaction model*: 
+
+- $b_{0}=99306$ is the `intercept` for *non-waterfront homes*.
+    - The **average** price is <span>&#36;</span>99,306 for *non-waterfront homes* with 0 *bedrooms*.
+
+--
+
+- $b_{2}=1139217$ is the **offset** in the intercept for *waterfront homes*. 
+    - The **average** price is <span>&#36;</span>99,306+<span>&#36;</span>1,139,217 = <span>&#36;</span>1,238,523 for *waterfront homes* with 0 *bedrooms*. 
+
+---
+
+# Interpreting the Coefficients
+
+$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$
+
+Unlike in the *interaction model*, there is only one slope term in the *parallel slopes model*:
+
+- $b_{1}=128265$ is the slope for *waterfront* **and** *non-waterfront homes*. 
+    - **Holding** `waterfront` **fixed** (i.e., for *one level of* `waterfront`): For every additional `bedroom`, there is an associated increase of, **on average**, <span>&#36;</span>128,265 on the price of the home. 
+
+---
+
+# Parallel Slopes Model
+
+$$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$
+
+For *waterfront homes*: $$\widehat{price}=1238523+\underline{128265}(bedrooms)$$
+
+For *non-waterfront homes*: $$\widehat{price}=99306+\underline{128265}(bedrooms)$$
+
+---
+
+# Comparing the Models
+
+```{r, echo = FALSE, out.width = "50%"}
+ggplot(house_prices_new, aes(x = bedrooms, y = price, color = waterfront)) + 
+  geom_point() + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", title = "Interaction Model") + 
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw()
+ggplot(house_prices_new, aes(x = bedrooms, y = price, color = waterfront)) + 
+  geom_point() + 
+  geom_parallel_slopes(se = FALSE) +
+  labs(x = "Bedrooms per home", y = "Price (in $)", title = "Parallel Slopes Model") + 
+  theme_bw() 
+```
+
+So... why would we *ever* use a **parallel slopes model**?
+- The lines in the left-hand plot don't look parallel, so why force them to be?
+- We'll get back to this, but as a short answer: Sometimes **simple** is better!
+
+---
+
+class: center, middle, frame
+
+# Two (or more) Numerical Explanatory Variables
+
+---
+
+# Two Numerical Explanatory Variables
+
+Instead of examining a model with *one numerical* and *one categorical* explanatory, let's look at a model with **two numerical explanatory variables**. 
+
+Using the `house_prices_new` data:
+
+- *y* = `price`
+
+- $x_{1}$ = `bedrooms`
+
+- $x_{2}$ = `sqft_living` (square footage of the home, from `?house_prices`)
+
+In other words, we will fit the model: $$\widehat{price} = b_{0}+b_{1}(bedrooms)+b_{2}(sqft.living)$$
+
+---
+
+# Correlation Matrix
+
+Because we have several **numerical** variables, we can calculate several pairwise **correlation coefficients**. 
+- (Recall that one cannot calculate a correlation coefficient with categorical variables.)
+
+While we could do this with `cor()` several times depending on the number of comparisons, it is much more efficient to construct a **correlation matrix**:
+
+```{r}
+house_prices_new %>%
+  select(price, bedrooms, sqft_living) %>%
+  cor()
+```
+
+---
+
+# Correlation Matrix
+
+```{r}
+house_prices_new %>%
+  select(price, bedrooms, sqft_living) %>%
+  cor()
+```
+
+- $r(price,bedrooms)=0.32$. 
+
+--
+
+- $r(price, sqft.living)=0.70$ means that there is a *relatively strong*, positive, linear correlation between price per home and square footage of the home. 
+
+--
+
+- $r(bedrooms, sqft.living)=0.59$ means that there is a *moderate*, positive, linear correlation between number of bedrooms per home and square footage of the home. 
+    - When two **explanatory variables** are correlated, we say that there is a high degree of **multicollinearity**. 
+
+---
+
+# EDA: Data Visualizations
+
+.pull-left[
+```{r}
+gf_point(price ~ sqft_living, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Square Footage of Home", y = "Price (in $)")
+```
+]
+
+.pull-right[
+```{r}
+gf_point(sqft_living ~ bedrooms, data = house_prices_new) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Number of Bedrooms", y = "Square Footage of Home")
+```
+]
+
+---
+
+# Fitting the Model
+
+To fit a model of this form in R, we use `lm()` exactly as we did in previous examples:
+
+```{r}
+lm_multiple = lm(price ~ bedrooms + sqft_living, data = house_prices_new)
+get_regression_table(lm_multiple)
+```
+
+The equation of the *regression plane* is: $$\widehat{price}=90034-62062(bedrooms)+317(sqft.living)$$
+
+---
+
+# Interpreting the Regression Coefficients
+
+$$\widehat{price}=90034-62062(bedrooms)+317(sqft.living)$$
+
+- $b_{0}=90034$: The average price is <span>&#36;</span>90,034 for homes with *0 bedrooms* **AND** *0 square footage of space*. 
+    - This doesn't make sense in context; using `sqft_living=0` is **extrapolation**!
+
+- $b_{1}=-62062$: *Taking all other variables in our model into account* (i.e., holding them fixed), for every additional bedroom, there is an associated **decrease** of <span>&#36;</span>62,062 in price per home, on average. 
+
+- $b_{2}=317$: *Taking all other variables in our model into account*, for every additional square foot of living space, there is an associated **increase** of <span>&#36;</span>317 in price per home, on average. 
+
+---
+
+# Interpreting the Regression Coefficients
+
+To better understand what these interpretations mean, let's consider a **simple regression model** and a **multiple regression model** side-by-side:
+
+```{r}
+lm_simple = lm(price ~ bedrooms, data = house_prices_new)
+get_regression_table(lm_simple)
+
+lm_multiple = lm(price ~ bedrooms + sqft_living, data = house_prices_new)
+get_regression_table(lm_multiple)
+```
+
+---
+
+# Interpreting the Regression Coefficients
+
+- **Simple**: $\widehat{price}=110316+127548(bedrooms)$
+- **Multiple**: $\widehat{price}=90034-62062(bedrooms)+317(sqft.living)$
+
+Introducing `sqft_living` into the model yielded a $b_{1}$ coefficient with **opposite sign**!
+- Changed from $127548$ to $-62062$
+
+--
+
+In the multiple regression model, the estimated coefficient $b_{1}=-62062$ does not mean that homes with *more bedrooms* are generally *worth less*. 
+- It must be interpreted while taking into account the *other explanatory variable* (`sqft_living`). 
+
+--
+
+Let's consider a home with a *fixed amount of living area*:
+- Those which devote more area to bedrooms must either (a) have smaller bedrooms; or (b) have less living area
+- This could reduce the home's value!
+
+---
+
+class: center, middle, frame
+
+# Model Selection
+
+---
+
+# Model Selection
+
+**When do we use an interaction model or a parallel slopes model?!**
+
+- If *lines of best fit* based on different levels of explanatory variables aren't *parellel*, why would we **force** them to be parallel?
+
+```{r, echo = FALSE, out.width = "40%"}
+ggplot(house_prices_new, aes(x = bedrooms, y = price, color = waterfront)) + 
+  geom_point() + 
+  labs(x = "Bedrooms per home", y = "Price (in $)", title = "Interaction Model") + 
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw()
+ggplot(house_prices_new, aes(x = bedrooms, y = price, color = waterfront)) + 
+  geom_point() + 
+  geom_parallel_slopes(se = FALSE) +
+  labs(x = "Bedrooms per home", y = "Price (in $)", title = "Parallel Slopes Model") + 
+  theme_bw() 
+```
+
+---
+
+# Model Selection
+
+Sometimes, **simpler** solutions are more likely to be *correct* than **complex** solutions. 
+
+Using `price` as the response:
+
+- The **interaction model** was
+\begin{align*}
+\widehat{price}&=114143+123862(bedrooms)-236296(waterfrontTRUE)\\
+&\ \ \ \ +416652(bedrooms:waterfrontTRUE)
+\end{align*}
+
+- The **parallel slopes model** was $$\widehat{price}=99306+128265(bedrooms)+1139217(waterfrontTRUE)$$
+
+--
+
+The interaction model is more *complex* due to the extra ( $b_{3}=416652$) term. 
+
+- Is the *extra complexity* warranted?
+
+- (Arguably, yes. But let's look at an example where it is less obvious...)
+
+---
+
+# `MA_schools`
+
+The `MA_schools` dataset in the `moderndive` package contains data on MA public high schools in 2017. 
+
+```{r, eval = FALSE}
+View(MA_schools)
+?MA_schools
+```
+
+We will model `average_sat_math` (*y*) as a function of:
+
+- `perc_disadvan` ( $x_{1}$): percent of study body considered "economically disadvantaged"
+
+- `size` ( $x_{2}$): size of enrollment (`small`, `medium`, `large`)
+
+---
+
+# Comparing the Models
+
+At least visually, the models don't appear very different!
+- Now let's compare the **regression tables**. 
+
+--
+
+```{r}
+lm_mass_int = lm(average_sat_math ~ perc_disadvan + size + 
+                   perc_disadvan*size, 
+                 data = MA_schools)
+get_regression_table(lm_mass_int)
+```
+
+---
+
+# Interaction Model
+
+```{r, echo = FALSE}
+lm_mass_int = lm(average_sat_math ~ perc_disadvan + size + 
+                   perc_disadvan*size, 
+                 data = MA_schools)
+get_regression_table(lm_mass_int)
+```
+
+The interaction model is 
+\begin{align*}
+  \widehat{avg.sat.math}&=594-2.93(perc.disadvan)-17.8(size:medium)\\
+  & \ \ \ \ -13.3(size:large)+0.146(perc.disadvan*size:medium)\\
+  & \ \ \ \ +0.189(perc.disadvan*size:large)
+\end{align*}
+
+---
+
+# Paraellel Slopes Model
+
+```{r}
+lm_mass_par = lm(average_sat_math ~ perc_disadvan + size, data = MA_schools)
+get_regression_table(lm_mass_par)
+```
+
+The parallel slopes model is 
+\begin{align*}
+  \widehat{avg.sat.math}&=594-2.78(perc.disadvan)\\
+  &\ \ \ \ -11.9(size:medium)-6.36(size:large)
+\end{align*}
+
+---
+
+# Comparing the Models
+
+Among other things, the **offsets** for the different slopes in the *interaction model* are very small relative to baseline. 
+
+- $b_{3}=0.146$ means that the slope for *medium* schools is only 0.146 points higher than baseline (-2.93). 
+
+- $b_{4}=0.189$ means that the slope for *large* schools is only 0.189 points higher than baseline (-2.93). 
+
+
+

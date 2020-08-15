@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>STAT 227: Statistical Design and Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Anthony Scotina" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# STAT 227: Statistical Design and Analysis
+## Introduction to Causal Inference
+### Anthony Scotina
+
+---
+
+
+
+
+
+
+# Needed Packages
+
+
+```r
+library(ggdag)
+library(tidyverse)
+```
+
+---
+
+# Correlation and Causation
+
+.center[
+&lt;img src="choc_consumption.png" width="364" /&gt;
+]
+
+---
+
+# Correlation and Causation
+
+
+
+&lt;img src="11-Causal_Inference_files/figure-html/unnamed-chunk-5-1.png" width="45%" /&gt;
+
+
+
+---
+
+# Correlation and Causation
+
+
+```r
+lm(Laureates10_million ~ Chocolate, data = nobel_chocolate)
+```
+
+```
+## 
+## Call:
+## lm(formula = Laureates10_million ~ Chocolate, data = nobel_chocolate)
+## 
+## Coefficients:
+## (Intercept)    Chocolate  
+##      -7.328        3.808
+```
+
+For every kilogram of chocolate consumed per year/capita, there is an associated increase of 3.8 Nobel laureates per 10 million, on average!
+
+---
+
+# Correlation and Causation
+
+From *Time*:
+
+.center[
+&lt;img src="choc_consumption_time.png" width="70%" /&gt;
+]
+
+&gt; “Obviously, these findings are hypothesis-generating only and will have to be tested in a prospective, randomized trial,” Messerli writes with a wink, noting that the data doesn’t prove that eating chocolate actually causes superior intellectual function. It could be, for instance, that smarter people simply eat more chocolate.
+
+---
+
+# Correlation and Causation
+
+"**Correlation does not imply causation**" is a mantra typically heard throughout statistics courses. 
+
+More technically, this is explained through the **common cause principle** (Reichenbach, 1956):
+
+- If two variables *X* and *Y* are **statistically dependent**, then either: 
+    - (a) *X* causes *Y*, 
+    - (b) *Y* causes *X*, or 
+    - (c) a third variable, *Z* causes both *X* and *Y*. 
+
+--
+
+In the case of (c), we say that *X* and *Y* are **independent** given *Z*.
+
+---
+
+# Which one?
+
+Which part of the **common cause principle** is true?! How can we find out?
+
+- Conduct an **experiment**. 
+
+This is **"easy"**. 
+
+- We just force half the countries represented in the data to eat more chocolate, and see if they end up with more Nobel Laureates! 
+
+--
+
+.center[
+![](https://media.giphy.com/media/PGTdBIN2HA9Gw/giphy.gif)
+]
+
+--
+
+Except... **we can't**. But **causal inference** can help us reach causal conclusions even without an experiment!
+
+---
+
+class: center, middle, frame
+
+# The Causal Hierarchy
+
+---
+
+# The Causal Hierarchy
+
+Pearl (2019) defined a **causal hierarchy** involving three levels:
+
+1. Association
+    - **Seeing**; "How would seeing *X* change my belief in *Y*?
+
+2. Intervention
+    - **Doing**; "What if I do *X*?"
+
+3. Counterfactuals 
+    - **Imagining**; "What if I acted differently?"
+
+---
+
+class: center, middle
+
+# Association: Seeing
+
+---
+
+# Seeing
+
+For the majority of the semester, we have been **seeing**. This is the most basic level of the causal hierarchy. 
+
+- We have seen variables that may or may not be **associated**. 
+
+To illustrate different types of **associations**, we will use the `SAT` dataset from Moodle. Run the following:
+
+
+
+
+```r
+View(SAT)
+```
+
+
+
+---
+
+# Marginal Association 
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+]
+
+.pull-right[
+
+```r
+lm_sat1 = lm(sat ~ salary, data = SAT)
+summary(lm_sat1)$coef[,c(1,2)]
+```
+
+```
+##                Estimate Std. Error
+## (Intercept) 1158.858797  57.659387
+## salary        -5.539615   1.632391
+```
+
+For every 1,000 dollars in salary, there is an associated *decrease* of, on average, 5.54 in SAT score. 
+]
+
+---
+
+# Conditional Independence
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+lm_sat2 = lm(sat ~ salary + frac_cat, data = SAT)
+summary(lm_sat2)$coef[,c(1,2)]
+```
+
+```
+##                        Estimate Std. Error
+## (Intercept)         1009.099328 32.2140166
+## salary                 0.783081  0.9949061
+## frac_cat25% to 50%  -113.042103 14.9382208
+## frac_cat50% or more -145.462382 12.8221613
+```
+
+**For a fixed percentage of test takers**: For every 1,000 dollars in salary, there is an associated *increase* of, on average, 0.783 in SAT score. 
+]
+
+---
+
+# Marginal vs. Conditional Association
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+
+
+- `salary` (*X*) and `sat` (*Y*) are *negatively* associated. This association is **marginal** because we did not take into account the third variable, `frac_cat` (*Z*). 
+]
+
+--
+
+.pull-right[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
+
+- When we **condition** on *Z*, we find that there is no longer a strong relationship between *X* and *Y*. 
+]
+
+---
+
+# Directed Acyclic Graph (DAGs)
+
+We can visualize the statistical dependencies between different variables by using a **directed acyclic graph (DAG)** 
+
+In the `SAT` example, we found that:
+
+- `salary` and `sat` are **marginally associated**, but...
+
+- `salary` and `sat` are **conditionally independent** *given Z*. 
+
+---
+
+# Marginal Association (DAG)
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+dag1 = dagify(sat ~ salary)
+ggdag(dag1) + 
+  theme_dag()
+```
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# Conditional Independence (DAG)
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+dag2 = dagify(sat ~ frac_cat, 
+              salary ~ frac_cat)
+ggdag(dag2, text_size = 3) + 
+  theme_dag()
+```
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# Conditional Independence (DAG)
+
+.pull-left[
+
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+dag3 = dagify(sat ~ frac_cat, 
+              frac_cat ~ salary)
+ggdag(dag3, text_size = 3) + 
+  theme_dag()
+```
+
+![](11-Causal_Inference_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# More on DAGs
+
+**DAGs** serve as a relatively simple way to diagram relationships between variables. 
+
+**What is the causal effect of an additional year of education on earnings?**
+
+1. List variables
+    - i.e., anything that is relevant: Things that are caused by (or cause) more education
+
+2. Draw arrows
+
+---
+
+# List Variables
+
+.center[
+**Education** `\(\longrightarrow\)` **Earnings**
+]
+
+- Location (school?)
+
+- Ability (how could we measure this?)
+
+- Demographics/SES
+
+- Birth year/generation
+
+- Connections (*"I know a guy, who knows a guy, who..."*)
+
+**What else?**
+
+---
+
+# Draw Arrows
+
+
+```r
+dag_earnings = dagify(earnings ~ education)
+ggdag(dag_earnings, text_size = 2.5) + 
+  theme_dag()
+```
+
+&lt;img src="dag_earnings_1.png" width="30%" /&gt;
+
+**Education (causes?) earnings**
+
+---
+
+# Draw Arrows
+
+
+```r
+dag_earnings = dagify(earnings ~ education, 
+                      education ~ location + school + birth_year + SES)
+ggdag(dag_earnings, text_size = 2.5) + 
+  theme_dag()
+```
+
+&lt;img src="dag_earnings_2.png" width="27%" /&gt;
+
+**Several things (cause?) education**
+
+---
+
+# Draw Arrows
+
+
+```r
+dag_earnings = dagify(earnings ~ education, 
+                      education ~ location + school + birth_year + SES, 
+                      earnings ~ birth_year + SES + location)
+ggdag(dag_earnings, text_size = 2.5) + 
+  theme_dag()
+```
+
+&lt;img src="dag_earnings_3.png" width="27%" /&gt;
+
+**Several things (cause?) earnings**
+
+---
+
+# Draw Arrows
+
+
+```r
+dag_earnings = dagify(earnings ~ education + birth_year + SES + location + connections, 
+                      education ~ location + school + birth_year + SES, 
+                      connections ~ education)
+ggdag(dag_earnings, text_size = 2.3) + 
+  theme_dag()
+```
+
+&lt;img src="dag_earnings_4.png" width="27%" /&gt;
+
+**Education (probably causes?) connections, which (causes?) earnings**
+
+---
+
+# Draw Arrows
+
+.center[
+&lt;img src="charlie_meme.jpg" width="75%" /&gt;
+]
+
+---
+
+# Practice
+
+**Yearly number of people who drowned by falling in a pool** 
+- is *correlated* ( `\(r=0.67\)`) with 
+
+**Yearly number of Nicholas Cage films**
+
+.pull-left[
+&lt;img src="sonic_drowning.jpg" width="75%" /&gt;
+]
+
+.pull-right[
+&lt;img src="cage.jpeg" width="75%" /&gt;
+]
+
+*Draw a DAG for this relationship.*
+
+---
+
+class: center, middle
+
+# Intervention: Doing
+
+---
+
+# Doing
+
+So far, we have described what we have **seen**. 
+
+- In which direction are variables in a DAG associated?
+
+- Are variables independent? Conditionally independent?
+
+--
+
+Now, let's interpret the arrows in a DAG as having a **causal** meaning. 
+
+- But what is a **causal effect**?
+
+&gt; *Pearl et al.*: A variable *X* has a **causal influence** on *Y* if changing *X* leads to changes in *Y*. 
+
+---
+
+# Causal Effects
+
+&gt; *Pearl et al.*: A variable *X* has a **causal influence** on *Y* if changing *X* leads to changes in *Y*. 
+
+How can we find **causal effects**? It sounds hard! Too many lurking variables/confounders!
+
+**Goal**: Isolate specific effects. 
+
+--
+
+.center[
+&lt;img src="jama_eggs.png" width="75%" /&gt;
+]
+
+---
+
+# Does eating eggs cause heart disease?
+
+
+
+.center[
+&lt;img src="dag_eggs_1.png" width="35%" /&gt;
+]
+
+But... there is *rarely* a **single path** between *treatment* (eating at least 3 eggs) and *outcome* (heart disease). 
+
+---
+
+# Any backdoor paths?
+
+
+
+.center[
+&lt;img src="dag_eggs_2.png" width="35%" /&gt;
+]
+
+Any **edge** (i.e., arrow) pointing to `eggs3` and *later* to `heart_dis` is a **backdoor**. 
+
+---
+
+# Closing Backdoors
+
+.pull-left[
+&lt;img src="dag_eggs_2.png" width="80%" /&gt;
+]
+
+.pull-right[
+To find the *effect* of **eating three eggs a day** on **risk of heart disease**, we need to **close all backdoors**. 
+
+
+- Find the part of `eggs3` *explained by* `activity`, and **subtract it out**. 
+
+- Find the part of `heart_disease` *explained by* `activity`, and **subtract it out**. 
+]
+
+--
+
+Removing differences in individuals **predicted by activity** (i.e., holding activity **constant**) allows us to compare individuals **as if they had the same activity level**. 
+
+---
+
+# How to adjust?
+
+One way to *control* for activity level is to include the term in a regression analysis!&lt;sup&gt;*&lt;/sup&gt; `$$\widehat{heart.disease}=b_{0}+b_{1}(eggs3)+b_{2}(activity)$$`
+
+.footnote[[*] One technically would need a logistic regression model here, since `heart_disease` is categorical (yes or no). Take STAT 229 for details! ]
+
+--
+
+A few other ways to *adjust*:
+
+- **Subclassification**: Generate estimates for different *subgroups*
+
+- **Matching** (see Anthony's dissertation...): Subset data to get *balanced* "treatment" and "control" groups
+
+- **Weighting**: Re-weight sample such that "treatment" is independent of possible confounders
+
+- Combinations of different methods
+
+---
+
+# More Paths
+
+.center[
+&lt;img src="dag_eggs_3.png" width="50%" /&gt;
+]
+
+---
+
+class: center, middle, frame
+
+# Counterfactuals: Imagining
+
+---
+
+# Imagining
+
+.pull-left[
+**Should you have taken STAT 227 or not?!**
+
+&lt;img src="STAT227_hex.png" width="50%" /&gt;
+
+&lt;img src="thinking_emoji.jpeg" width="50%" /&gt;
+
+]
+
+--
+
+.pull-right[
+&gt; **Fundamental Problem of Causal Inference** (Holland, 1986): We only ever observe one realization. 
+
+Because you chose to take STAT 227, you cannot *not choose* to take STAT 227. 
+
+- Though humans think this way all the time! We reason **counterfactually**. 
+]
+
+---
+
+# Potential Outcome Framework
+
+Let `\(Y_{i}\)` denote your *love for statistics* (on a scale of, say, 1--10). Furthermore, let
+`$$T_{i}=\begin{cases}1,&amp;\text{if you took STAT 227}\\ 0,&amp;\text{if you did not take STAT 227}\end{cases}$$`
+
+--
+
+- The **potential outcome** `\(Y_{i}(0)\)` is individual `\(i\)`'s *love for statistics* if they *did not* take STAT 227. 
+- The **potential outcome** `\(Y_{i}(1)\)` is individual `\(i\)`'s *love for statistics* if they *did* take STAT 227. 
+
+--
+
+Under some *strict assumptions*, an estimate of the **causal effect** of STAT 227 on love for statistics is `$$\frac{1}{n}\sum_{i=1}^{n}[Y_{i}(1)-Y_{i}(0)]$$`
+
+---
+
+# Fundamental Problem of Causal Inference
+
+**Potential Outcomes**: `\(Y_{i}(0)\)` and `\(Y_{i}(1)\)` for each individual
+
+**Problem**: Only one `\(Y_{i}\)` is observed for each individual! What do we do?
+- Take my **special topics course** in the spring!
+
+--
+
+.center[
+&lt;img src="STAT391_hex.png" width="35%" /&gt;
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
