@@ -1,1 +1,1 @@
-# STAT227
+# STAT 227: Statistical Design and Analysis
