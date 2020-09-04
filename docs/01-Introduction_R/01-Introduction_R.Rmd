@@ -28,7 +28,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE,
 ```
 
 <!--
-pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH227-Intermediate Statistics/Lecture Slides/01-Introduction/01-Introduction.html")
+pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis [ONLINE]/Slides/11-Causal_Inference/11-Causal_Inference.html")
 -->
 
 class: center, middle, frame
@@ -326,8 +326,8 @@ class: center, middle
 
 **Installing R Studio**
 
-- For Windows, click [HERE](https://download1.rstudio.org/desktop/windows/RStudio-1.3.1056.exe).
-- For Mac, click [HERE](https://download1.rstudio.org/desktop/macos/RStudio-1.3.1056.dmg). 
+- For Windows, click [HERE](https://download1.rstudio.org/desktop/windows/RStudio-1.3.1073.exe).
+- For Mac, click [HERE](https://download1.rstudio.org/desktop/macos/RStudio-1.3.1073.dmg). 
 
 ---
 
