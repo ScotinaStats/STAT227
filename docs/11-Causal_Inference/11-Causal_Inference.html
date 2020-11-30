@@ -4,6 +4,7 @@
     <title>STAT 227: Statistical Design and Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Anthony Scotina" />
+    <script src="libs/header-attrs-2.3/header-attrs.js"></script>
     <link rel="stylesheet" href="my-theme.css" type="text/css" />
   </head>
   <body>
@@ -300,28 +301,6 @@ ggdag(dag2, text_size = 3) +
 
 ---
 
-# Conditional Independence (DAG)
-
-.pull-left[
-
-
-![](11-Causal_Inference_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
-]
-
-.pull-right[
-
-```r
-dag3 = dagify(sat ~ frac_cat, 
-              frac_cat ~ salary)
-ggdag(dag3, text_size = 3) + 
-  theme_dag()
-```
-
-![](11-Causal_Inference_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
-]
-
----
-
 # More on DAGs
 
 **DAGs** serve as a relatively simple way to diagram relationships between variables. 
@@ -428,7 +407,7 @@ ggdag(dag_earnings, text_size = 2.3) +
 
 ---
 
-# Practice
+# A (probably) non-causal relationship
 
 **Yearly number of people who drowned by falling in a pool** 
 - is *correlated* ( `\(r=0.67\)`) with 
@@ -443,7 +422,7 @@ ggdag(dag_earnings, text_size = 2.3) +
 &lt;img src="cage.jpeg" width="75%" /&gt;
 ]
 
-*Draw a DAG for this relationship.*
+*Try to draw a DAG for this relationship!*
 
 ---
 
@@ -552,14 +531,6 @@ A few other ways to *adjust*:
 
 ---
 
-# More Paths
-
-.center[
-&lt;img src="dag_eggs_3.png" width="50%" /&gt;
-]
-
----
-
 class: center, middle, frame
 
 # Counterfactuals: Imagining
@@ -617,6 +588,9 @@ Under some *strict assumptions*, an estimate of the **causal effect** of STAT 22
 .center[
 &lt;img src="STAT391_hex.png" width="35%" /&gt;
 ]
+
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

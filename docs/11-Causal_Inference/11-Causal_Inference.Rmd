@@ -373,39 +373,6 @@ ggdag(dag2, text_size = 3) +
 
 ---
 
-# Conditional Independence (DAG)
-
-.pull-left[
-```{r, echo = FALSE, eval = FALSE}
-xyplot(sat ~ salary, data = SAT, type = c("p", "r"), groups = frac_cat, 
-       xlab = "Average Teacher Salary (in $thousands, by state)", 
-       ylab = "Average SAT Score (by state)", 
-       pch = 20, auto.key = list(title="Fraction of test takers", cex = 1))
-```
-
-```{r, echo = FALSE}
-SAT %>%
-  ggplot(aes(x = salary, y = sat, color = frac_cat)) + 
-  geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) + 
-  labs(x = "Average Teacher Salary (in $thousands, by state)", 
-       y = "Average SAT Score (by state)", 
-       color = "Percent Test Takers") + 
-  theme_bw()
-```
-]
-
-.pull-right[
-```{r}
-dag3 = dagify(sat ~ frac_cat, 
-              frac_cat ~ salary)
-ggdag(dag3, text_size = 3) + 
-  theme_dag()
-```
-]
-
----
-
 # More on DAGs
 
 **DAGs** serve as a relatively simple way to diagram relationships between variables. 
@@ -518,7 +485,7 @@ knitr::include_graphics("charlie_meme.jpg")
 
 ---
 
-# Practice
+# A (probably) non-causal relationship
 
 **Yearly number of people who drowned by falling in a pool** 
 - is *correlated* ( $r=0.67$) with 
@@ -537,7 +504,7 @@ knitr::include_graphics("cage.jpeg")
 ```
 ]
 
-*Draw a DAG for this relationship.*
+*Try to draw a DAG for this relationship!*
 
 ---
 
@@ -660,16 +627,6 @@ A few other ways to *adjust*:
 - **Weighting**: Re-weight sample such that "treatment" is independent of possible confounders
 
 - Combinations of different methods
-
----
-
-# More Paths
-
-.center[
-```{r, echo = FALSE, out.width = "50%"}
-knitr::include_graphics("dag_eggs_3.png")
-```
-]
 
 ---
 
