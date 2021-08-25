@@ -307,27 +307,31 @@ knitr::include_graphics("rstudio.png")
 
 ---
 
-class: center, middle
+# What's going on in this graph?
 
-# Getting Started with Data and R
+**1.** [Internet Privacy Policies](https://www.nytimes.com/2020/01/02/learning/whats-going-on-in-this-graph-internet-privacy-policies.html)
+
+<br>
+
+**2.** [Ride-Hailing Services](https://www.nytimes.com/2019/10/31/learning/whats-going-on-in-this-graph-nov-6-2019.html)
+
+<br>
+
+**3.** [Change in Working Age](https://www.nytimes.com/2019/09/19/learning/whats-going-on-in-this-graph-sept-25-2019.html)
+
+<br>
+
+- What do you **notice**?
+
+- What do you **wonder**?
+
+- Write a **catchy headline**!
 
 ---
 
-# First, let's install R and R Studio...
+class: center, middle
 
-*If you haven't already installed these...*
-
-**Installing R**
-
-- For Windows, click [HERE](https://cran.revolutionanalytics.com/bin/windows/base/R-4.0.2-win.exe).
-- For Mac, click [HERE](https://cran.revolutionanalytics.com/bin/macosx/R-4.0.2.pkg).
-
---
-
-**Installing R Studio**
-
-- For Windows, click [HERE](https://download1.rstudio.org/desktop/windows/RStudio-1.3.1073.exe).
-- For Mac, click [HERE](https://download1.rstudio.org/desktop/macos/RStudio-1.3.1073.dmg). 
+# Getting Started with Data and R
 
 ---
 
@@ -723,7 +727,7 @@ knitr::include_graphics("import_data2.png")
 # Importing Datasets
 
 ```{r, echo = FALSE, message = FALSE}
-gapminder2007 <- read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis [ONLINE]/Data/gapminder2007.csv")
+gapminder2007 <- read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis/Data/gapminder2007.csv")
 ```
 
 ```{r, comment = ""}
