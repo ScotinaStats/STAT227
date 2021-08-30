@@ -177,11 +177,7 @@ Our textbooks:
     - Webpage: [https://learningstatisticswithr.com/book/](https://learningstatisticswithr.com/book/)
     - Cost: $0
     
-3. **OpenIntro Statistics**
-    - Webpage: [https://www.openintro.org/stat/textbook.php?stat_book=os](https://www.openintro.org/stat/textbook.php?stat_book=os)
-    - Cost: $0
-    
-4. Other sources may be used throughout the semester.
+3. Other sources may be used throughout the semester.
 
 ---
 
@@ -198,6 +194,28 @@ knitr::include_graphics("md_mobile.png")
 class: center, middle, frame
 
 # Getting Started
+
+---
+
+# What's going on in this graph?
+
+**1.** [Internet Privacy Policies](https://www.nytimes.com/2020/01/02/learning/whats-going-on-in-this-graph-internet-privacy-policies.html)
+
+<br>
+
+**2.** [Ride-Hailing Services](https://www.nytimes.com/2019/10/31/learning/whats-going-on-in-this-graph-nov-6-2019.html)
+
+<br>
+
+**3.** [Change in Working Age](https://www.nytimes.com/2019/09/19/learning/whats-going-on-in-this-graph-sept-25-2019.html)
+
+<br>
+
+- What do you **notice**?
+
+- What do you **wonder**?
+
+- Write a **catchy headline**!
 
 ---
 
@@ -304,28 +322,6 @@ In order to foster a conceptual understanding of statistics, use **real data** w
 knitr::include_graphics("rstudio.png")
 ```
 ]
-
----
-
-# What's going on in this graph?
-
-**1.** [Internet Privacy Policies](https://www.nytimes.com/2020/01/02/learning/whats-going-on-in-this-graph-internet-privacy-policies.html)
-
-<br>
-
-**2.** [Ride-Hailing Services](https://www.nytimes.com/2019/10/31/learning/whats-going-on-in-this-graph-nov-6-2019.html)
-
-<br>
-
-**3.** [Change in Working Age](https://www.nytimes.com/2019/09/19/learning/whats-going-on-in-this-graph-sept-25-2019.html)
-
-<br>
-
-- What do you **notice**?
-
-- What do you **wonder**?
-
-- Write a **catchy headline**!
 
 ---
 
