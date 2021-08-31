@@ -147,17 +147,29 @@ class: center, middle, frame
 
 # Who am I?
 
-[Anthony Scotina](https://scotinastats.rbind.io)
+.pull-left[
 
-- Email: [anthony.scotina@simmons.edu](anthony.scotina@simmons.edu)
+**Anthony Scotina** (he/him)
 
-- Website: [https://scotinastats.rbind.io/](https://scotinastats.rbind.io/)
+- Asst. Prof of Statistics
+
+- Website/blog: [https://scotinastats.rbind.io/](https://scotinastats.rbind.io/)
 
 - Graduated with a Ph.D. in [Biostatistics](https://www.brown.edu/academics/public-health/biostats/home) from Brown University in 2018
 
-- Second year as an Assistant Professor of Statistics
+- I used to have many hobbies, but all I do these days is use **R**. 
 
-- Hobbies include **R**, and that's it. I don't like anything else.  
+<br>
+
+- I have an 11-month old cat named **Moose**!
+]
+
+.pull-right[
+```{r, echo = FALSE}
+knitr::include_graphics("cat.jpg")
+```
+
+]
     
 ---
 
