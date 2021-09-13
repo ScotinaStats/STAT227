@@ -4,6 +4,7 @@
     <title>STAT 227: Statistical Design and Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Anthony Scotina" />
+    <script src="libs/header-attrs-2.6/header-attrs.js"></script>
     <link rel="stylesheet" href="my-theme.css" type="text/css" />
   </head>
   <body>
@@ -523,20 +524,7 @@ xyplot(arr_delay ~ dep_delay, alpha = 0.2, data = frontier)  +
     
 ---
 
-# Practice
 
-Repeat the previous exercise (i.e., construct a scatterplot of `arr_delay` versus `dep_delay`), but do it for a **different airline**. 
-
-This includes using the `filter()` function from several slides back to select only rows in `flights` that match your airline of choice. 
-
-**Hint**: Check this dataset for carrier codes:
-
-
-```r
-View(airlines)
-```
-
----
 
 # Histograms
 
@@ -596,22 +584,6 @@ gf_histogram( ~ temp, data = weather, fill = "dodgerblue")
 ```
 
 - R has **many colors**. See [this](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). 
-
----
-
-# Practice
-
-Construct a histogram for `humid` (humidity). As an added bonus, try to improve the *x*-axis label!
-
---
-
-**Solution**
-
-
-```r
-gf_histogram( ~ humid, data = weather) + 
-  labs(x = "Relative Humidity")
-```
 
 ---
 
@@ -683,13 +655,13 @@ The `favstats()` and `skim()` functions also work here!
 
 # Boxplots
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-31-1.png" width="65%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-30-1.png" width="65%" /&gt;
 
 ---
 
 # Boxplots
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-32-1.png" width="65%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-31-1.png" width="65%" /&gt;
 
 ---
 
@@ -698,8 +670,11 @@ The `favstats()` and `skim()` functions also work here!
 **What does the boxplot tell us?**
 
 In November, at JFK Airport in New York...
+
 - 25% of points fall below the bottom edge of the box, which is the **first quartile** of 37.04 degrees. 
+
 - 75% of points fall above the top edge of the box, which is the **third quartile** of 51.98 degrees. 
+
 - 50% of points fall between the first and third quartiles, or between 37.04 and 51.98 degrees. 
     - This is the **interquartile range (IQR)**. 
 
@@ -715,7 +690,7 @@ gf_boxplot( ~ temp, data = jfk_nov) +
   labs(y = "Hourly Temperature (in degrees F)")
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-32-1.png" width="50%" /&gt;
 
 ---
 
@@ -736,7 +711,7 @@ gf_boxplot(temp ~ factor(month), data = weather) +
 
 # Side-by-side Boxplots
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-35-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-34-1.png" width="50%" /&gt;
 
 - The dots representing values falling outside the whiskers are called outliers. These can be thought of as anomalous values.
 
@@ -744,19 +719,7 @@ gf_boxplot(temp ~ factor(month), data = weather) +
 
 # Practice
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-1.png" width="50%" /&gt;
-
-1. What is the **median** hourly wind speed for airports in New York?
-2. What is the **IQR**?
-3. Are there any outliers?
-
----
-
-# Practice
-
-1. Using the filtered `frontier` dataset (or the airline that you chose earlier), create a boxplot of `dep_delay`. 
-
-2. Using the same dataset as in (1), create side-by-side boxplots of `dep_delay` by `month`. Do you notice any *seasonal trends* in departure delays?
+Using the filtered `frontier` dataset, create side-by-side boxplots of `dep_delay` by `month`. Do you notice any *seasonal trends* in departure delays?
 
 --
 
@@ -799,7 +762,7 @@ Using the `flights` data frame, let's create a barplot of the `carrier` variable
 gf_bar(~ carrier, data = flights)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-37-1.png" width="50%" /&gt;
 
 ---
 
@@ -839,7 +802,7 @@ Suppose we want to make different-colored bars for different airports (`origin`)
 gf_bar( ~ carrier, fill = ~ origin, data = flights)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-41-1.png" width="45%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png" width="45%" /&gt;
 
 ---
 
@@ -851,7 +814,7 @@ gf_bar( ~ carrier, fill = ~ origin, data = flights) +
   coord_flip()
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-40-1.png" width="50%" /&gt;
 
 ---
 
@@ -869,7 +832,7 @@ gf_bar( ~ carrier, fill = ~ origin, data = flights) +
 
 # Pie Charts
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-44-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png" width="50%" /&gt;
 
 ---
 
@@ -944,12 +907,13 @@ Though there is **one type of graph** that is *always bad to use*...
 # Summary
 
 .center[
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-47-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-45-1.png" width="50%" /&gt;
 
 &lt;img src="aquaman.jpg" width="10%" /&gt;
 **Pie charts are bad!**
 &lt;img src="batman.jpg" width="10%" /&gt;
 ]
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -427,6 +427,8 @@ xyplot(arr_delay ~ dep_delay, alpha = 0.2, data = frontier)  +
     
 ---
 
+```{r, echo = FALSE, eval = FALSE}
+
 # Practice
 
 Repeat the previous exercise (i.e., construct a scatterplot of `arr_delay` versus `dep_delay`), but do it for a **different airline**. 
@@ -435,11 +437,13 @@ This includes using the `filter()` function from several slides back to select o
 
 **Hint**: Check this dataset for carrier codes:
 
-```{r, eval = FALSE}
+{r, eval = FALSE}
 View(airlines)
-```
+
 
 ---
+
+```
 
 # Histograms
 
@@ -497,21 +501,6 @@ gf_histogram( ~ temp, data = weather, fill = "dodgerblue")
 ```
 
 - R has **many colors**. See [this](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). 
-
----
-
-# Practice
-
-Construct a histogram for `humid` (humidity). As an added bonus, try to improve the *x*-axis label!
-
---
-
-**Solution**
-
-```{r, echo = TRUE, eval = FALSE}
-gf_histogram( ~ humid, data = weather) + 
-  labs(x = "Relative Humidity")
-```
 
 ---
 
@@ -609,8 +598,11 @@ jfk_nov %>%
 **What does the boxplot tell us?**
 
 In November, at JFK Airport in New York...
+
 - 25% of points fall below the bottom edge of the box, which is the **first quartile** of 37.04 degrees. 
+
 - 75% of points fall above the top edge of the box, which is the **third quartile** of 51.98 degrees. 
+
 - 50% of points fall between the first and third quartiles, or between 37.04 and 51.98 degrees. 
     - This is the **interquartile range (IQR)**. 
 
@@ -654,23 +646,7 @@ gf_boxplot(temp ~ factor(month), data = weather) +
 
 # Practice
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, out.width = "50%"}
-weather_filter = filter(weather, wind_speed < 1000)
-gf_boxplot( ~ wind_speed, data = weather_filter) + 
-  labs(y = "Hourly Wind Speed (in mph)")
-```
-
-1. What is the **median** hourly wind speed for airports in New York?
-2. What is the **IQR**?
-3. Are there any outliers?
-
----
-
-# Practice
-
-1. Using the filtered `frontier` dataset (or the airline that you chose earlier), create a boxplot of `dep_delay`. 
-
-2. Using the same dataset as in (1), create side-by-side boxplots of `dep_delay` by `month`. Do you notice any *seasonal trends* in departure delays?
+Using the filtered `frontier` dataset, create side-by-side boxplots of `dep_delay` by `month`. Do you notice any *seasonal trends* in departure delays?
 
 --
 
