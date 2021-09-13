@@ -35,7 +35,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE,
 ```{r}
 library(nycflights13)
 library(mosaic)
-library(skimr)
 library(tidyverse)
 ```
 
@@ -297,23 +296,11 @@ favstats(dep_delay ~ carrier, data = flights)[1:10,]
 
 ---
 
-# Summary Statistics using `skim()`
-
-In addition to the previous function, we can use the `skim()` function from the `skimr` package:
-
-```{r, eval = FALSE, comment = ""}
-skim(flights)
-```
-
-**Note**: `p0`, `p50`, and `p100` are the *minimum*, *median*, and *maximum* values, respectively. 
-
----
-
 # Practice
 
 **Now it's your turn!**
 
-1. Use `favstats()` or `skim()` to calculate summary statistics for **arrival delay** separated by carrier. Do you notice anything different from *departure delays*?
+1. Use `favstats()` to calculate summary statistics for **arrival delay** separated by carrier. Do you notice anything different from *departure delays*?
 
 2. Using `tally()` find the most frequent **destination** of flights leaving New York in 2013. 
 
@@ -321,7 +308,7 @@ skim(flights)
 
 # Single Summary Statistics
 
-If you need a single summary statistic, rather than the *set of statistics* given by `summary()`, `favstats()`, or `skim()`, there are functions for that!
+If you need a single summary statistic, rather than the *set of statistics* given by `summary()` or `favstats()`, there are functions for that!
 
 ```{r, comment = ""}
 mean( ~ distance, data = flights)
@@ -557,7 +544,7 @@ summary(jfk_nov$temp)
 
 (Recall that we can use the `$` operator to view individual variables in a data frame!)
 
-The `favstats()` and `skim()` functions also work here!
+The `favstats()` function also work here!
 
 ---
 

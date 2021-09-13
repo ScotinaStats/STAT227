@@ -30,7 +30,6 @@ class: center, middle, inverse, title-slide
 ```r
 library(nycflights13)
 library(mosaic)
-library(skimr)
 library(tidyverse)
 ```
 
@@ -328,24 +327,11 @@ We'll see syntax similar to this throughout the course.
 
 ---
 
-# Summary Statistics using `skim()`
-
-In addition to the previous function, we can use the `skim()` function from the `skimr` package:
-
-
-```r
-skim(flights)
-```
-
-**Note**: `p0`, `p50`, and `p100` are the *minimum*, *median*, and *maximum* values, respectively. 
-
----
-
 # Practice
 
 **Now it's your turn!**
 
-1. Use `favstats()` or `skim()` to calculate summary statistics for **arrival delay** separated by carrier. Do you notice anything different from *departure delays*?
+1. Use `favstats()` to calculate summary statistics for **arrival delay** separated by carrier. Do you notice anything different from *departure delays*?
 
 2. Using `tally()` find the most frequent **destination** of flights leaving New York in 2013. 
 
@@ -353,7 +339,7 @@ skim(flights)
 
 # Single Summary Statistics
 
-If you need a single summary statistic, rather than the *set of statistics* given by `summary()`, `favstats()`, or `skim()`, there are functions for that!
+If you need a single summary statistic, rather than the *set of statistics* given by `summary()` or `favstats()`, there are functions for that!
 
 
 ```r
@@ -467,7 +453,7 @@ Using the `mosaic` package:
 gf_point(arr_delay ~ dep_delay, data = frontier)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-18-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-17-1.png" width="50%" /&gt;
 
 ---
 
@@ -479,7 +465,7 @@ gf_point(arr_delay ~ dep_delay, data = frontier) +
   labs(x = "Departure Delay (in mins)", "Arrival Delay (in mins)")
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-19-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-18-1.png" width="50%" /&gt;
 
 ---
 
@@ -552,14 +538,14 @@ Suppose we are interested in the *distribution* of hourly temperature recordings
 gf_histogram( ~ temp, data = weather)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-23-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-22-1.png" width="50%" /&gt;
 
 ---
 
 # Histograms
 
 .pull-left[
-![](02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+![](02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -649,19 +635,19 @@ summary(jfk_nov$temp)
 
 (Recall that we can use the `$` operator to view individual variables in a data frame!)
 
-The `favstats()` and `skim()` functions also work here!
+The `favstats()` function also work here!
+
+---
+
+# Boxplots
+
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-29-1.png" width="65%" /&gt;
 
 ---
 
 # Boxplots
 
 &lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-30-1.png" width="65%" /&gt;
-
----
-
-# Boxplots
-
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-31-1.png" width="65%" /&gt;
 
 ---
 
@@ -690,7 +676,7 @@ gf_boxplot( ~ temp, data = jfk_nov) +
   labs(y = "Hourly Temperature (in degrees F)")
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-32-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-31-1.png" width="50%" /&gt;
 
 ---
 
@@ -711,7 +697,7 @@ gf_boxplot(temp ~ factor(month), data = weather) +
 
 # Side-by-side Boxplots
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-34-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-33-1.png" width="50%" /&gt;
 
 - The dots representing values falling outside the whiskers are called outliers. These can be thought of as anomalous values.
 
@@ -762,7 +748,7 @@ Using the `flights` data frame, let's create a barplot of the `carrier` variable
 gf_bar(~ carrier, data = flights)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-37-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-36-1.png" width="50%" /&gt;
 
 ---
 
@@ -802,7 +788,7 @@ Suppose we want to make different-colored bars for different airports (`origin`)
 gf_bar( ~ carrier, fill = ~ origin, data = flights)
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png" width="45%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-38-1.png" width="45%" /&gt;
 
 ---
 
@@ -814,7 +800,7 @@ gf_bar( ~ carrier, fill = ~ origin, data = flights) +
   coord_flip()
 ```
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-40-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-39-1.png" width="50%" /&gt;
 
 ---
 
@@ -832,7 +818,7 @@ gf_bar( ~ carrier, fill = ~ origin, data = flights) +
 
 # Pie Charts
 
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-42-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-41-1.png" width="50%" /&gt;
 
 ---
 
@@ -907,7 +893,7 @@ Though there is **one type of graph** that is *always bad to use*...
 # Summary
 
 .center[
-&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-45-1.png" width="50%" /&gt;
+&lt;img src="02-Exploratory_Data_Analysis_files/figure-html/unnamed-chunk-44-1.png" width="50%" /&gt;
 
 &lt;img src="aquaman.jpg" width="10%" /&gt;
 **Pie charts are bad!**
