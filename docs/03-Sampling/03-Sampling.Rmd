@@ -162,8 +162,8 @@ Using `View(virtual_prop_red)`, we see that there are now *30 columns*: each col
 
 # Practice
 
-Using `histogram()` in the `mosaic` package, construct a **histogram** of your 30 `prop_red` values in `virtual_prop_red`. 
-- Make sure you add `type = "count"` so the *y*-axis gives a **count**. 
+Construct a **histogram** of your 30 `prop_red` values in `virtual_prop_red`. 
+
 - What do you notice about the **distribution**?
 
 --
