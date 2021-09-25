@@ -260,6 +260,102 @@ six_bootstrap_samples =
 
 ---
 
+# Bootstrapping
+
+When using the bootstrap, it might help to think of our original sample *as if* it were the population. 
+
+- If the sample is *representative*, then the population might as well just be tons of copies of the original sample. 
+
+--
+
+**Example**:
+
+Meet some "data":
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("ac_beau.jpeg")
+knitr::include_graphics("ac_diva.jpeg")
+knitr::include_graphics("ac_rod.jpeg")
+knitr::include_graphics("ac_pango.jpeg")
+knitr::include_graphics("ac_goose.jpeg")
+knitr::include_graphics("ac_dora.jpeg")
+```
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** $\implies$ *One Sample Statistic*
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap1.png")
+```
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** $\implies$ **Bootstrap Sample** $\implies$ *Bootstrap Statistic*
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap2.png")
+```
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** $\implies$ **Bootstrap Samples** $\implies$ *Bootstrap Statistics*
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap3.png")
+```
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** $\implies$ **Many Bootstrap Samples** $\implies$ *Many Bootstrap Statistics*
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap4.png")
+```
+]
+
+---
+
+# Why Bootstrapping Works
+
+If the sample is **representative**, the *population* might as well be *many copies of the sample*. 
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap5.png")
+```
+]
+
+---
+
+# Why Bootstrapping Works
+
+If the sample is **representative**, the *population* might as well be *many copies of the sample*. 
+
+.center[
+```{r, echo = FALSE, dpi = 300}
+knitr::include_graphics("bootstrap6.png")
+```
+]
+
+---
+
 # Taking 6 Bootstrap Samples
 
 ```{r, out.width = "50%"}
@@ -630,6 +726,12 @@ We can repeat this process 100 times (don't worry about the code), and generate 
 
 .center[
 ```{r, echo = FALSE, dpi = 300, warning = FALSE, out.width = "60%"}
+knitr::include_graphics("ci_sim.png")
+```
+]
+
+.center[
+```{r, echo = FALSE, eval = FALSE}
 set.seed(12)
   
 # Function to run infer pipeline
@@ -765,6 +867,66 @@ In general, *larger sample sizes tend to produce narrower confidence intervals*.
     - Also, the **standard error decreases**. 
     
 For example, a 95% confidence interval with $n=50$ will be *narrower* than a 95% confidence interval with $n=25$. 
+
+---
+
+# Bootstrap vs. Traditional Methods
+
+One advantage of the **bootstrap** over **traditional** methods is that you can construct a CI for *any* statistic, rather than only a **mean** or **proportion**. 
+
+The `diamonds` dataset in the `tidyverse` package contains prices of almost 54,000 diamonds.
+
+```{r, eval = FALSE}
+View(diamonds)
+```
+
+
+---
+
+# Practice
+
+Using the `diamonds` dataset, calculate a 95% confidence interval for the average price of diamonds. 
+
+--
+
+*Solution*
+
+```{r, comment = "", message = FALSE, fig.keep = "none"}
+bootstrap_dist_diamonds = 
+  diamonds %>%
+  specify(response = price) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "mean")
+
+visualize(bootstrap_dist_diamonds) # Check for bell shape
+
+diamonds_ci = bootstrap_dist_diamonds %>%
+  get_ci(level = 0.95, type = "percentile")
+diamonds_ci
+```
+
+---
+
+# Practice
+
+Because `price` is heavily right-skewed (construct a histogram to see!), calculate a 95% confidence interval for the *median* diamond price. 
+
+[**Hint**: The *only thing* you need to change in the previous code is `stat = ...` in `calculate()`.]
+
+--
+
+*Solution*
+
+```{r, comment = "", message = FALSE, fig.keep = "none"}
+gf_histogram( ~ price, data = diamonds)
+
+diamonds_ci_median = diamonds %>%
+  specify(response = price) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "median") %>%
+  get_ci(level = 0.95, type = "percentile")
+diamonds_ci_median
+```
 
 ---
 

@@ -4,6 +4,7 @@
     <title>STAT 227: Statistical Design and Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Anthony Scotina" />
+    <script src="libs/header-attrs-2.6/header-attrs.js"></script>
     <link rel="stylesheet" href="my-theme.css" type="text/css" />
   </head>
   <body>
@@ -277,6 +278,83 @@ six_bootstrap_samples =
 
 ---
 
+# Bootstrapping
+
+When using the bootstrap, it might help to think of our original sample *as if* it were the population. 
+
+- If the sample is *representative*, then the population might as well just be tons of copies of the original sample. 
+
+--
+
+**Example**:
+
+Meet some "data":
+.center[
+&lt;img src="ac_beau.jpeg" width="80" /&gt;&lt;img src="ac_diva.jpeg" width="80" /&gt;&lt;img src="ac_rod.jpeg" width="79" /&gt;&lt;img src="ac_pango.jpeg" width="81" /&gt;&lt;img src="ac_goose.jpeg" width="80" /&gt;&lt;img src="ac_dora.jpeg" width="79" /&gt;
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** `\(\implies\)` *One Sample Statistic*
+
+.center[
+&lt;img src="bootstrap1.png" width="280" /&gt;
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** `\(\implies\)` **Bootstrap Sample** `\(\implies\)` *Bootstrap Statistic*
+
+.center[
+&lt;img src="bootstrap2.png" width="548" /&gt;
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** `\(\implies\)` **Bootstrap Samples** `\(\implies\)` *Bootstrap Statistics*
+
+.center[
+&lt;img src="bootstrap3.png" width="540" /&gt;
+]
+
+---
+
+# How Bootstrapping Works
+
+**One Sample** `\(\implies\)` **Many Bootstrap Samples** `\(\implies\)` *Many Bootstrap Statistics*
+
+.center[
+&lt;img src="bootstrap4.png" width="541" /&gt;
+]
+
+---
+
+# Why Bootstrapping Works
+
+If the sample is **representative**, the *population* might as well be *many copies of the sample*. 
+
+.center[
+&lt;img src="bootstrap5.png" width="502" /&gt;
+]
+
+---
+
+# Why Bootstrapping Works
+
+If the sample is **representative**, the *population* might as well be *many copies of the sample*. 
+
+.center[
+&lt;img src="bootstrap6.png" width="616" /&gt;
+]
+
+---
+
 # Taking 6 Bootstrap Samples
 
 
@@ -285,7 +363,7 @@ gf_histogram( ~ year, data = six_bootstrap_samples) +
   facet_wrap( ~ replicate)
 ```
 
-&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-14-1.png" width="50%" /&gt;
+&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-21-1.png" width="50%" /&gt;
 
 **Note**: We used the `facet_wrap( ~ replicate)` layer to create separate plots for each `replicate`. 
 
@@ -480,7 +558,7 @@ This generates a data frame with 1,000 rows: each row containing the sample mean
 visualize(bootstrap_distribution)
 ```
 
-&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-22-1.png" width="50%" /&gt;
+&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-29-1.png" width="50%" /&gt;
 
 ---
 
@@ -555,9 +633,9 @@ percentile_ci
 
 ```
 # A tibble: 1 x 2
-  `2.5%` `97.5%`
-   &lt;dbl&gt;   &lt;dbl&gt;
-1  1991.   2000.
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    1991.    2000.
 ```
 
 --
@@ -622,9 +700,9 @@ standard_error_ci
 
 ```
 # A tibble: 1 x 2
-  lower upper
-  &lt;dbl&gt; &lt;dbl&gt;
-1 1991. 2000.
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    1991.    2000.
 ```
 
 - We have to specify that we want a CI using the **standard error method** (using `type = "se"`). 
@@ -645,9 +723,9 @@ standard_error_ci
 
 ```
 # A tibble: 1 x 2
-  lower upper
-  &lt;dbl&gt; &lt;dbl&gt;
-1 1991. 2000.
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    1991.    2000.
 ```
 
 - Our range of plausible values for the mean year of US pennies in 2019 is between 1991 and 2000 years, with **95% confidence**. 
@@ -707,9 +785,9 @@ bootstrap_distribution_new %&gt;%
 
 ```
 ## # A tibble: 1 x 2
-##   `2.5%` `97.5%`
-##    &lt;dbl&gt;   &lt;dbl&gt;
-## 1  1989.   1999.
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1    1989.    1999.
 ```
 
 This new confidence interval *also* contains `\(\mu\)` (1995). 
@@ -721,7 +799,11 @@ This new confidence interval *also* contains `\(\mu\)` (1995).
 We can repeat this process 100 times (don't worry about the code), and generate 100 95% confidence intervals:
 
 .center[
-&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-33-1.png" width="60%" /&gt;
+&lt;img src="ci_sim.png" width="60%" /&gt;
+]
+
+.center[
+
 ]
 
 ---
@@ -773,9 +855,9 @@ bootstrap_distribution %&gt;%
 
 ```
 ## # A tibble: 1 x 2
-##   `10%` `90%`
-##   &lt;dbl&gt; &lt;dbl&gt;
-## 1 1993. 1998.
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1    1993.    1998.
 ```
 
 ---
@@ -795,9 +877,9 @@ bootstrap_distribution %&gt;%
 
 ```
 ## # A tibble: 1 x 2
-##   `2.5%` `97.5%`
-##    &lt;dbl&gt;   &lt;dbl&gt;
-## 1  1991.   2000.
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1    1991.    2000.
 ```
 
 ---
@@ -817,9 +899,9 @@ bootstrap_distribution %&gt;%
 
 ```
 ## # A tibble: 1 x 2
-##   `0.5%` `99.5%`
-##    &lt;dbl&gt;   &lt;dbl&gt;
-## 1  1990.   2001.
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1    1990.    2001.
 ```
 
 ---
@@ -831,6 +913,83 @@ In general, *larger sample sizes tend to produce narrower confidence intervals*.
     - Also, the **standard error decreases**. 
     
 For example, a 95% confidence interval with `\(n=50\)` will be *narrower* than a 95% confidence interval with `\(n=25\)`. 
+
+---
+
+# Bootstrap vs. Traditional Methods
+
+One advantage of the **bootstrap** over **traditional** methods is that you can construct a CI for *any* statistic, rather than only a **mean** or **proportion**. 
+
+The `diamonds` dataset in the `tidyverse` package contains prices of almost 54,000 diamonds.
+
+
+```r
+View(diamonds)
+```
+
+
+---
+
+# Practice
+
+Using the `diamonds` dataset, calculate a 95% confidence interval for the average price of diamonds. 
+
+--
+
+*Solution*
+
+
+```r
+bootstrap_dist_diamonds = 
+  diamonds %&gt;%
+  specify(response = price) %&gt;%
+  generate(reps = 1000, type = "bootstrap") %&gt;%
+  calculate(stat = "mean")
+
+visualize(bootstrap_dist_diamonds) # Check for bell shape
+
+diamonds_ci = bootstrap_dist_diamonds %&gt;%
+  get_ci(level = 0.95, type = "percentile")
+diamonds_ci
+```
+
+```
+# A tibble: 1 x 2
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    3896.    3968.
+```
+
+---
+
+# Practice
+
+Because `price` is heavily right-skewed (construct a histogram to see!), calculate a 95% confidence interval for the *median* diamond price. 
+
+[**Hint**: The *only thing* you need to change in the previous code is `stat = ...` in `calculate()`.]
+
+--
+
+*Solution*
+
+
+```r
+gf_histogram( ~ price, data = diamonds)
+
+diamonds_ci_median = diamonds %&gt;%
+  specify(response = price) %&gt;%
+  generate(reps = 1000, type = "bootstrap") %&gt;%
+  calculate(stat = "median") %&gt;%
+  get_ci(level = 0.95, type = "percentile")
+diamonds_ci_median
+```
+
+```
+# A tibble: 1 x 2
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1     2375     2440
+```
 
 ---
 
@@ -868,7 +1027,7 @@ prop_red_50 = tally(color ~ replicate, format = "proportion",
 gf_histogram( ~ prop_red_50)
 ```
 
-&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-38-1.png" width="50%" /&gt;
+&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-49-1.png" width="50%" /&gt;
 
 ---
 
@@ -887,20 +1046,20 @@ bootstrap_distribution = bowl_sample_1 %&gt;%
 gf_histogram( ~ stat, data = bootstrap_distribution)
 ```
 
-&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-40-1.png" width="40%" /&gt;
+&lt;img src="04-Confidence_Intervals_files/figure-html/unnamed-chunk-51-1.png" width="40%" /&gt;
             
 ---
 
 # Comparison
 
 .pull-left[
-![](04-Confidence_Intervals_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
+![](04-Confidence_Intervals_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
 
 (1,000 sample proportions)
 ]
 
 .pull-right[
-![](04-Confidence_Intervals_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+![](04-Confidence_Intervals_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 (1,000 bootstrap sample proportions)
 ]
@@ -960,7 +1119,8 @@ We can use the bootstrap to calculate **confidence intervals**, which give a *ra
 
 - The **percentile method** gives the 2.5th and 97.5th *percentiles* of the bootstrap distribution. 
 
-- The **standard error method** can also be used, but the variable must be *Normally distributed*.
+- The **standard error method** can also be used, but the variable must be *Normally distributed*. 
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
