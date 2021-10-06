@@ -775,7 +775,7 @@ We can use the `infer` pipeline to re-do the entire set of exercises today, but 
 
 ```r
 bootstrap_distribution_new = pennies_pop %&gt;%
-  rep_sample_n(size = 40, reps = 1) %&gt;%
+  rep_sample_n(size = 50, reps = 1) %&gt;%
   specify(response = year) %&gt;% 
   generate(reps = 1000) %&gt;% 
   calculate(stat = "mean")
@@ -787,7 +787,7 @@ bootstrap_distribution_new %&gt;%
 ## # A tibble: 1 x 2
 ##   lower_ci upper_ci
 ##      &lt;dbl&gt;    &lt;dbl&gt;
-## 1    1989.    1999.
+## 1    1991.    1999.
 ```
 
 This new confidence interval *also* contains `\(\mu\)` (1995). 
@@ -988,7 +988,7 @@ diamonds_ci_median
 # A tibble: 1 x 2
   lower_ci upper_ci
      &lt;dbl&gt;    &lt;dbl&gt;
-1     2375     2440
+1    2375.     2440
 ```
 
 ---

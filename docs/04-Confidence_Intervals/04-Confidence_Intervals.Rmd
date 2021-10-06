@@ -708,7 +708,7 @@ set.seed(45)
 
 ```{r, message = FALSE}
 bootstrap_distribution_new = pennies_pop %>%
-  rep_sample_n(size = 40, reps = 1) %>%
+  rep_sample_n(size = 50, reps = 1) %>%
   specify(response = year) %>% 
   generate(reps = 1000) %>% 
   calculate(stat = "mean")
