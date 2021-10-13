@@ -4,6 +4,7 @@
     <title>STAT 227: Statistical Design and Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Anthony Scotina" />
+    <script src="libs/header-attrs-2.6/header-attrs.js"></script>
     <link rel="stylesheet" href="my-theme.css" type="text/css" />
   </head>
   <body>
@@ -817,6 +818,8 @@ obs_diff
 ```
 
 ```
+Response: rating (numeric)
+Explanatory: genre (factor)
 # A tibble: 1 x 1
    stat
   &lt;dbl&gt;
@@ -863,10 +866,13 @@ movies_sample %&gt;%
 ```
 
 ```
+Response: rating (numeric)
+Explanatory: genre (factor)
+Null Hypothesis: independence
 # A tibble: 1 x 1
-    stat
-   &lt;dbl&gt;
-1 -0.031
+     stat
+    &lt;dbl&gt;
+1 -0.0310
 ```
 
 ---
@@ -885,10 +891,13 @@ movies_sample %&gt;%
 ```
 
 ```
+Response: rating (numeric)
+Explanatory: genre (factor)
+Null Hypothesis: independence
 # A tibble: 1 x 1
-    stat
-   &lt;dbl&gt;
-1 -0.031
+     stat
+    &lt;dbl&gt;
+1 -0.0310
 ```
 
 - `generate(reps = 1, type = "permute")` completes a single **permutation** of sending values of `ratings` to potentially different values of `genre` from which they originally came. 
@@ -1045,9 +1054,9 @@ movies_sample %&gt;%
 
 ```
 # A tibble: 1 x 2
-  `2.5%` `97.5%`
-   &lt;dbl&gt;   &lt;dbl&gt;
-1  0.750    1.55
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    0.750     1.55
 ```
 
 ---
@@ -1088,9 +1097,9 @@ movies_sample %&gt;%
 
 ```
 # A tibble: 1 x 2
-  `2.5%` `97.5%`
-   &lt;dbl&gt;   &lt;dbl&gt;
-1  0.750    1.55
+  lower_ci upper_ci
+     &lt;dbl&gt;    &lt;dbl&gt;
+1    0.750     1.55
 ```
 
 - We are **95% confident** that Romance movies are rated between 0.739 and 1.55 points higher, *on average*, than Action movies on IMDB.com. 
@@ -1130,6 +1139,8 @@ movies_sample %&gt;%
 ```
 
 ```
+Response: rating (numeric)
+Null Hypothesis: point
 # A tibble: 1 x 1
    stat
   &lt;dbl&gt;
@@ -1152,6 +1163,7 @@ x_bar
 ```
 
 ```
+Response: rating (numeric)
 # A tibble: 1 x 1
    stat
   &lt;dbl&gt;
@@ -1292,6 +1304,8 @@ obs_diff
 ```
 
 ```
+Response: response (factor)
+Explanatory: college_grad (factor)
 # A tibble: 1 x 1
      stat
     &lt;dbl&gt;
@@ -1323,6 +1337,9 @@ null_distribution
 ```
 
 ```
+Response: response (factor)
+Explanatory: college_grad (factor)
+Null Hypothesis: independence
 # A tibble: 1,000 x 2
    replicate     stat
        &lt;int&gt;    &lt;dbl&gt;
@@ -1445,9 +1462,9 @@ flying %&gt;%
 
 ```
 ## # A tibble: 1 x 2
-##   `2.5%` `97.5%`
-##    &lt;dbl&gt;   &lt;dbl&gt;
-## 1 0.0482   0.186
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1   0.0482    0.186
 ```
 
 We are 95% confident that between 4.94% and 18.8% *more* individuals *without* children think it is rude to bring an unruly child on a plane, compared to individuals *with* children. 
@@ -1476,6 +1493,8 @@ Here are the steps for *any* hypothesis test:
 --
 
 Also: **Don't forget to include a confidence interval!**
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

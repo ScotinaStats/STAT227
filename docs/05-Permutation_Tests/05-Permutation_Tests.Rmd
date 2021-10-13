@@ -183,21 +183,25 @@ knitr::kable(myth_data, format = "html", row.names = FALSE)
 .pull-left[
 ```{r, echo = FALSE}
 original_tab = tally(yawn ~ group, data = mythbusters_yawn)
-barplot(original_tab, legend = row.names(original_tab), args.legend = list(title = "Yawned?"), 
-        main = "Original")
+gf_bar( ~ group, fill = ~ yawn, data = mythbusters_yawn, position = "fill") + 
+  labs(title = "Original Data")
+#barplot(original_tab, legend = row.names(original_tab), args.legend = list(title = "Yawned?"), 
+#        main = "Original")
 ```
 ]
 
 .pull-right[
 ```{r, echo = FALSE}
-set.seed(4)
+set.seed(228)
 shuffled_myth = mythbusters_yawn %>%
   specify(formula = yawn ~ group, success = "yes") %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1, type = "permute") 
 shuffled_tab = tally(yawn ~ group, data = shuffled_myth)
-barplot(shuffled_tab, legend = row.names(shuffled_tab), args.legend = list(title = "Yawned?"), 
-        main = "Shuffled")
+gf_bar( ~ group, fill = ~ yawn, data = shuffled_myth, position = "fill") + 
+  labs(title = "Shuffled Data")
+#barplot(shuffled_tab, legend = row.names(shuffled_tab), args.legend = list(title = "Yawned?"), 
+#        main = "Shuffled")
 ```
 ]
 
