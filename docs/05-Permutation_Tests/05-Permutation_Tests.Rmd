@@ -894,20 +894,6 @@ movies_sample %>%
 
 ---
 
-# A Note on `calculate()`
-
-You can use `calculate()` for *any* hypothesis test; not just those comparing a **difference in means**.
-
-```{r, eval = FALSE}
-?calculate
-```
-
-```{r, echo = FALSE, out.width = "80%"}
-knitr::include_graphics("help_calculate.png")
-```
-
----
-
 # Hypothesis Test for One Mean
 
 Instead of comparing movie rating between groups, let's compare the overall movie rating to 5:

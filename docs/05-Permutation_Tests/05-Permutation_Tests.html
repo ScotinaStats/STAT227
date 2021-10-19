@@ -1106,19 +1106,6 @@ movies_sample %&gt;%
 
 ---
 
-# A Note on `calculate()`
-
-You can use `calculate()` for *any* hypothesis test; not just those comparing a **difference in means**.
-
-
-```r
-?calculate
-```
-
-&lt;img src="help_calculate.png" width="80%" /&gt;
-
----
-
 # Hypothesis Test for One Mean
 
 Instead of comparing movie rating between groups, let's compare the overall movie rating to 5:
@@ -1268,7 +1255,7 @@ gf_bar( ~ response, fill = ~ college_grad, data = offshore) +
   labs(fill = "College Graduate?")
 ```
 
-&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-51-1.png" width="50%" /&gt;
+&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-49-1.png" width="50%" /&gt;
 
 ---
 
@@ -1282,7 +1269,7 @@ gf_bar( ~ response, fill = ~ college_grad, data = offshore,
   labs(y = "Proportion", fill = "College Graduate?")
 ```
 
-&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-52-1.png" width="50%" /&gt;
+&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-50-1.png" width="50%" /&gt;
 
 ---
 
@@ -1366,7 +1353,7 @@ visualize(null_distribution) +
   shade_p_value(obs_stat = -0.0993, direction = "both")
 ```
 
-&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-57-1.png" width="50%" /&gt;
+&lt;img src="05-Permutation_Tests_files/figure-html/unnamed-chunk-55-1.png" width="50%" /&gt;
 
 ---
 
