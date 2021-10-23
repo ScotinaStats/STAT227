@@ -51,36 +51,6 @@ Regardless the setting, we want to make explicit the relationship between:
 
 ---
 
-# Introduction
-
-.pull-left[
-**Outcome/Response** (*y*)
-
-- no opinion of offshore drilling? (*categorical*)
-- IMDB.com rating (*numerical*)
-- income (*numerical*)
-]
-
-.pull-right[
-**Explanatory** (*x*)
-
-- college graduate? (two levels; *categorical*)
-- movie genre (two levels; *categorical*)
-- city (two levels; *categorical*)
-]
-
---
-
-**In R** 
-
-.center[
-`function(y ~ x, data = ...)`
-
-`function( ~ x, data = ...)`
-]
-
----
-
 # Multiple Categories
 
 What if we had the following:
@@ -128,7 +98,7 @@ The `Zodiac.csv` dataset (downloadable from the online campus) contains data fro
 - Data consist of zodiac signs of 256 heads of the largest 400 companies
 
 ```{r, echo = FALSE, message = FALSE}
-Zodiac <- read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis [ONLINE]/Data/Zodiac.csv")
+Zodiac <- read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis/Data/Zodiac.csv")
 ```
 
 ```{r}
@@ -182,7 +152,6 @@ In a **Goodness-of-Fit Test**, we are seeing how "good" (or, how *well*) a null 
 
 - In the zodiac example, the null model consists of births that are *uniformly distributed over the 12 signs*. 
 
---
 
 While this is technically a **hypothesis test**, there is no single parameter to estimate (such as the *proportion* of Scorpio). 
 
@@ -241,25 +210,20 @@ The *shape* of the distribution depends on the number of **degrees of freedom** 
 
 - Assuming the null hypothesis is true (always a first step in hypothesis testing), $$df=\text{number of categories}-1$$
  
---
 
 For the zodiac example, $$df=12-1 = 11$$
 
 ---
 
-# Chi-Square Statistic
+# Chi-Square Statistic and p-value
 
 In the zodiac example, $$\chi^{2}=\sum_{i=1}^{k}\frac{(O_{i}-E_{i})^{2}}{E_{i}}=\frac{(29-21.3)^2}{21.3}+\cdots+\frac{(18-21.3)^2}{21.3}=5.09$$
 
----
-
-# The p-value
+--
 
 Recall: 
 
 > **p-value**: The probability of obtaining a test statistic just as extreme or more extreme than the observed test statistic *assuming the null hypothesis (H<sub>0</sub>) is true*
-
---
 
 In a **goodness-of-fit test**:
 
@@ -292,8 +256,6 @@ This means that, *if the zodiac signs of executives were in fact distributed uni
 
 - This is not unusual at all!
 
---
-
 **Conclusion**
 
 We *fail to reject the null hypothesis*, and conclude that these data show virtually *no evidence of non-uniform distribution* of zodiac signs among executives. 
@@ -304,15 +266,9 @@ We *fail to reject the null hypothesis*, and conclude that these data show virtu
 
 Unlike *Normal* and *t* distributions (from theory-based hypothesis tests, for example), the $\chi^{2}$ distribution is **skewed**. 
 
-- As *n* (and hence, the *df*) increases, the degree of skewness in the $\chi^{2}$ distribution changes. 
-
---
+- As the *number of categories* (and hence, the *df*) increases, the degree of skewness in the $\chi^{2}$ distribution changes. 
 
 While $\chi^{2}=5.09$ is *not extreme* in the distribution with $df=11$, it might appear much *more extreme* in a distribution with smaller *df*, or *less extreme* with even higher *df*. 
-
---
-
-From STAT 338/339: The **expected value** (i.e., the mean) of the $\chi^{2}$ distribution is the *df*!
 
 ---
 
@@ -342,6 +298,7 @@ ggplot(data.frame(x = c(0, 50)), aes(x = x)) +
 
 ---
 
+```{r, echo = FALSE, eval = FALSE}
 # Weldon's Dice
 
 Walter Frank Raphael Weldon (1860-1906) was an English evolutionary biologist.
@@ -355,9 +312,9 @@ lightest.
 --
 
 .center[
-```{r, echo = FALSE, out.width = "25%"}
+#```{r, echo = FALSE, out.width = "25%"}
 knitr::include_graphics("weldon.jpg")
-```
+#```
 ]
 
 ---
@@ -365,9 +322,9 @@ knitr::include_graphics("weldon.jpg")
 # Labby's Dice
 
 .center[
-```{r, echo = FALSE, out.width = "50%"}
+#```{r, echo = FALSE, out.width = "50%"}
 knitr::include_graphics("labby.PNG")
-```
+#```
 ]
 
 In 2009, Zacariah Labby (University of Chicago) repeated Weldon's experiment using a homemade dice-throwing, pip-counting machine.
@@ -381,12 +338,12 @@ There were 150 images to process manually each day. At this rate, Weldon's exper
 # Summarizing Labby's Results
 
 .center[
-```{r, echo = FALSE}
+#```{r, echo = FALSE}
 knitr::kable(data.frame(Outcome = c("1", "2", "3", "4", "5", "6", "Total"), 
                         Observed = c("53,222", "52,118", "52,465", "52,338", "52,244", "53,285", "315,672"), 
                         Expected = c(rep("52,612", 6), "315,672")), 
              format = "html", align = "c")
-```
+#```
 ]
 
 Do these data provide convincing evidence of an inconsistency between the observed and expected counts?
@@ -408,13 +365,13 @@ For this exercise, $$\chi^{2}=\sum_{i=1}^{k}\frac{(O_{i}-E_{i})^{2}}{E_{i}}=24.7
 --
 
 .center[
-```{r, echo = FALSE, out.width = "40%"}
+#```{r, echo = FALSE, out.width = "40%"}
 ggplot(data.frame(x = c(0, 30)), aes(x = x)) +
      stat_function(fun = dchisq, args = list(df = 5)) + 
   geom_vline(xintercept = 24.73, col = "blue", linetype = "dashed", size = 1) +
   labs(x = "Test Statistic", y = "Density") + 
   theme_bw()
-```
+#```
 ]
 
 ---
@@ -427,12 +384,13 @@ The original claim that 5s and 6s appear more often due to carved-out pips is no
 - Dice used in casinos have flush faces, where the pips are filled in with a plastic of the same density as the surrounding material, and are precisely balanced.
 
 .center[
-```{r, echo = FALSE, out.width = "50%"}
+#```{r, echo = FALSE, out.width = "50%"}
 knitr::include_graphics("dice.PNG")
-```
+#```
 ]
 
 ---
+```
 
 # Dog Data!!!
 
@@ -459,7 +417,9 @@ View(nyc_bites)
 ```
 
 ```{r}
-bite_tab = sort(tally( ~ breed, data = nyc_bites), decreasing = TRUE)
+bite_tab = nyc_bites %>%
+  count(breed, sort = TRUE) %>%
+  slice(1:8) # Extract only the TOP 8!
 bite_tab
 ```
 
@@ -471,10 +431,8 @@ Let's use only the species with bite counts over 200:
 
 ```{r}
 nyc_bites_200 = nyc_bites %>%
-  filter(breed %in% names(bite_tab[1:8]))
+  filter(breed %in% bite_tab$breed)
 ```
-
---
 
 $H_{0}$: Bite count is *unformly distributed* across dog breed. 
 
@@ -546,7 +504,7 @@ Download/Import the `gss.csv` dataset, which contains data on 149 GSS respondent
 The [General Social Survey](http://gss.norc.org/) (GSS) is a sociological survey that keeps records of the concerns, experiences, attitudes, and practices of residents of the United States. 
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
-gss <- readr::read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis [ONLINE]/Data/gss.csv")
+gss <- readr::read_csv("~/Dropbox/Teaching/03-Simmons Courses/STAT227-Statistical Design and Analysis/Data/gss.csv")
 ```
 
 ```{r, eval = FALSE}
@@ -574,8 +532,6 @@ First, let's generate a **contingency table** of responses for each variable.
 gss_table = tally(NASA ~ party, data = gss)
 gss_table
 ```
-
---
 
 Are **political party** and **opinions on space funding** *independent*?
 
@@ -611,6 +567,7 @@ gf_bar( ~ party, fill = ~ NASA, data = gss,
 # Exploratory Data Analysis
 
 It doesn't look like there are major differences in how Democrats, Independents, and Republicans support space exploration. 
+
 - But let's investigate this further using a **chi-square test for independence**!
 
 --
@@ -708,34 +665,14 @@ class: center, middle, frame
 # Permutation Chi-Square Tests (with R)
 
 .center[
-```{r, echo = FALSE, out.width = "30%"}
+```{r, echo = FALSE, out.width = "20%"}
 knitr::include_graphics("infer_hex.png")
-```
-]
-
----
-
-# Permutation Chi-Square Goodness of Fit Test (with R)
-
-```{r, eval = FALSE}
-?calculate
 ```
 
 ```{r, echo = FALSE, out.width = "80%"}
 knitr::include_graphics("help_calculate.png")
 ```
-
----
-
-# Permutation Chi-Square Goodness of Fit Test (with R)
-
-Up until now, we have been conducting chi-square tests by comparing our **observed statistic** to a *theoretical distribution* in a world where the null hypothesis is true. 
-
-Permutation tests, as they did when comparing one or two groups, allow us to **simulate** the null hypothesis distribution through permutations. 
-
-> *If we live in world where variables are totally unrelated, the ties between variables are arbitrary, so they might just as well have been shuffled.* - Andrew Bray
-
-**What does this world look like?**
+]
 
 ---
 
@@ -817,14 +754,6 @@ null_distribution_NASA = gss %>%
 # Visualize the Null Distribution
 
 ```{r, out.width = "50%"}
-visualize(null_distribution_NASA)
-```
-
----
-
-# Visualize the Null Distribution
-
-```{r, out.width = "50%"}
 visualize(null_distribution_NASA) + 
   shade_p_value(obs_stat = 1.33, direction = "greater") #<<
 ```
@@ -844,8 +773,6 @@ chisq_stat = gss %>%
   calculate(stat = "Chisq")
 chisq_stat
 ```
-
---
 
 This calculates &chi;<sup>2</sup> for the **original sample**, rather than for each simulated permutation of the sample. 
 
