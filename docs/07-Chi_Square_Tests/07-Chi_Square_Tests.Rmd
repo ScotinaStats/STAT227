@@ -799,5 +799,35 @@ Compare this with the P-value obtained using the **theoretical test**:
 chisq.test(gss_table)
 ```
 
+---
 
+# More Dog Data!!!
+
+Is there an *association* between dog breed and NYC borough?
+
+Import the `nyc_license` dataset, either by loading the `nycdogs` package or downloading `nyc_license.csv` from the course webpage. 
+
+```{r, eval = FALSE}
+View(nyc_license)
+```
+
+---
+
+# More Dog Data!!!
+
+Let's look at only the *five most popular dog breeds*, and the *five most populous NYC boroughs*:
+
+```{r}
+nyc_license_ex = nyc_license %>%
+  filter(breed_rc %in% c("Yorkshire Terrier", "Shih Tzu", 
+                         "Labrador (or Crossbreed)", "Pit Bull (or Mix)", 
+                         "Chihuahua")) %>%
+  filter(borough %in% c("Manhattan", "Brooklyn", "Queens", 
+                        "Bronx", "Staten Island"))
+```
+
+1. Perform EDA (i.e., construct a **contingency table** and *appropriate visualizations*).
+
+2. Perform the **test for independence**. 
+    - State the test statistic, p-value, and conclusion. 
 

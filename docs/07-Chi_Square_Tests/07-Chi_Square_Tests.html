@@ -888,7 +888,39 @@ data:  gss_table
 X-squared = 1.3261, df = 4, p-value = 0.8569
 ```
 
+---
 
+# More Dog Data!!!
+
+Is there an *association* between dog breed and NYC borough?
+
+Import the `nyc_license` dataset, either by loading the `nycdogs` package or downloading `nyc_license.csv` from the course webpage. 
+
+
+```r
+View(nyc_license)
+```
+
+---
+
+# More Dog Data!!!
+
+Let's look at only the *five most popular dog breeds*, and the *five most populous NYC boroughs*:
+
+
+```r
+nyc_license_ex = nyc_license %&gt;%
+  filter(breed_rc %in% c("Yorkshire Terrier", "Shih Tzu", 
+                         "Labrador (or Crossbreed)", "Pit Bull (or Mix)", 
+                         "Chihuahua")) %&gt;%
+  filter(borough %in% c("Manhattan", "Brooklyn", "Queens", 
+                        "Bronx", "Staten Island"))
+```
+
+1. Perform EDA (i.e., construct a **contingency table** and *appropriate visualizations*).
+
+2. Perform the **test for independence**. 
+    - State the test statistic, p-value, and conclusion. 
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
