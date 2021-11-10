@@ -1,5 +1,5 @@
 ---
-title: "MATH 227: Statistical Design and Analysis"
+title: "STAT 227: Statistical Design and Analysis"
 subtitle: "One-Way ANOVA"
 author: "Anthony Scotina"
 date: ""
@@ -21,9 +21,6 @@ mono_accent(base_color = "#43418A")
 library(tidyverse)
 library(mosaic)
 library(infer)
-library(skimr)
-library(gapminder)
-library(lsr)
 
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
                       echo = TRUE, dpi = 300)
@@ -45,121 +42,98 @@ class: center, middle, frame
 library(tidyverse)
 library(mosaic)
 library(infer)
-library(skimr)
-library(gapminder)
-library(lsr)
 ```
 
-- Install `lsr`!
 ---
 
 # Motivating Example
 
-It is known that life expectancy is not the same across countries and continents. 
+It is known that "*danceability*" (and other music-related metrics) are not the same across different *songs* and *genres*. 
 
 - This is related to *many* factors. 
 
 **Two questions:**
 
-1. Are there *significant differences* in life expectancy **between** continents?
+1. Are there *significant differences* in danceability **between** genres?
 
-2. Are there *significant differences* in life expectancy **within** continents?
+2. Are there *significant differences* in danceability **within** genres?
 
 ---
 
-# `gapminder` data frame
+# `spotify_songs` data 
 
-We'll use the `gapminder` data frame, within the `gapminder` R package. 
-- This data frame contains developmental statistics for 142 countries measured in five-year intervals between 1952 and 2007. 
+We'll use a smaller version of the `spotify_songs` data from [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-01-21/readme.md)
+
+- This dataset contains song statistics for over 30,000 songs scraped from Spotify. 
+
+We'll select 250 songs at random:
+
+```{r}
+set.seed(227) # RUN THIS!!!
+spotify_songs = read.csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+spotify_songs = spotify_songs %>%
+  slice_sample(n = 250) 
+```
 
 **The set-up**:
 
-1. Life expectancy (`lifeExp`) is the **outcome variable** (*y*). 
+1. Danceability (`danceability`) is the **outcome variable** (*y*). 
 
-2. Continent (`continent`) is the **explanatory variable** (*x*). 
+2. Genre (`playlist_genre`) is the **explanatory variable** (*x*). 
 
-    - Note that `continent` is *categorical* with more than two levels. 
+    - Note that `playlist_genre` is *categorical* with more than two levels. 
   
 ---
 
 # Exploratory Data Analysis
 
-First, run this code to extract the data from 2007 (don't worry about the syntax for this class):
 ```{r}
-gapminder2007 = gapminder %>%
-  filter(year == 2007 & continent != "Oceania") %>% 
-  select(country, continent, lifeExp, gdpPercap) %>%
-  mutate(continent = factor(continent))
+favstats( ~ danceability, data = spotify_songs) %>%
+  select(median, mean, sd, n)
 ```
 
---
 
-Let's use `skim()` to get summary statistics for each variable at once. 
+```{r}
+favstats(danceability ~ playlist_genre, data = spotify_songs) %>%
+  select(playlist_genre, median, mean, sd, n)
+```
 
-- Feel free to use other summary statistic functions if you wish!
+- Rap and Latin music have the highest mean danceability, whereas rock has the lowest. 
 
+- Similar levels of variability within each genre. 
 
-```{r, eval = FALSE}
-skim(gapminder2007)
+---
+
+# Dataviz
+
+```{r, dpi = 300, out.width = "50%"}
+gf_boxplot(danceability ~ playlist_genre, data = spotify_songs) + 
+  labs(x = "", y = "Danceability") + 
+  theme_minimal()
 ```
 
 ---
 
-# Summary Statistics
+# Dataviz
 
-**Some findings**
-
-- Africa has the most countries in the dataset with 52. 
-
-- The median life expectancy (`p50`) is 71.94. This means that half of the countries in this dataset (71 countries) have a life expectancy *less than* 71.94!
-
-- GDP per capita (measured in USD, inflation-adjusted) has a median of <span>&#36;</span>5,981.20 and a mean of <span>&#36;</span>11,421 (!!!)
-    - Clearly, this distribution is **right-skewed**. 
-
----
-
-# Summary Statistics (by continent)
-
-A better way to summarize life expectancy might be to **group by** continent.. 
-
-```{r, comment = ""}
-favstats(lifeExp ~ continent, data = gapminder2007)
-```
-
---
-
-- The middle 50% of life expectancy (on the country level) within each of the Americas, Asia, and Europe is is roughly similar. 
-
-- Africa's life expectancy by country is much more *left-skewed*. 
-    - The mean isn't much less than the other continents, but the median is *substantially* smaller. 
-
----
-
-# Practice
-
-Create side-by-side boxplots that compare `lifeExp` between `continent`. 
-
---
-
-*Solution*
-
-```{r, out.width = "35%"}
-gf_boxplot(lifeExp ~ continent, data = gapminder2007) + 
-  labs(y = "Life Expectancy")
+```{r, dpi = 300, out.width = "50%"}
+gf_density( ~ danceability, fill = ~ playlist_genre, data = spotify_songs) + 
+  labs(x = "Danceability", fill = "Genre") + 
+  theme_minimal()
 ```
 
 ---
 
 # Research Question
 
-Is there a difference in the **average** life expectancy among the five continents?
+Is there a difference in the **average** danceability among the six genres?
 
 - To compare the means of *two groups*, we used a **permutation test** for the *difference between two means* (or the theory-based *t*-test, provided a few assumptions and conditions are met). 
 
 --
 
 - To compare the means of *more than two groups*, we will use a test called the **one-way analysis of variance (ANOVA)**.
-    - The "one-way" refers to *one* explanatory variable (in this case, `continent`).
+    - The "one-way" refers to *one* explanatory variable (in this case, `playlist_genre`).
 
 ---
 
@@ -186,21 +160,6 @@ Let $\mu_{i}$ be the mean of group $i$.
 3. The **variability** *across each group* should be about equal. 
 
     - Especially if the sample sizes differ between groups. 
-    
----
-
-# Testing Between Only Two Groups
-
-Why might it be inappropriate in this context to simply run a hypothesis test comparing average life expectancy between *Europe* and *Africa* using a 5% significance level?
-
---
-
-This is called **p-hacking**! 
-
-- Naturally, we would pick pairs of groups with the largest differences in a formal test between two means. 
-    - This leads to an inflated *Type I Error* rate. 
-    
-- Just because there is a large difference between two groups does not necessarily mean that there is a real underlying  effect. 
 
 ---
 
@@ -209,7 +168,7 @@ This is called **p-hacking**!
 To perform a one-way ANOVA (also called the **F-test**), we will construct a one way ANOVA table and *reverse engineer* it. 
 
 ```{r, comment = ""}
-anova_table = aov(lifeExp ~ continent, data = gapminder2007)
+anova_table = aov(danceability ~ playlist_genre, data = spotify_songs)
 summary(anova_table)
 ```
 
@@ -217,62 +176,59 @@ summary(anova_table)
 
 - "Sum Sq" is short for **Sum of Squares**, and "Mean Sq" is short for **Mean Square**. 
 
-- The `continent` row gives information on the variability **between** continents. 
-- The `Residuals` row gives information on the variability **within** continents. 
+- The `playlist_genre` row gives information on the variability **between** genres. 
+- The `Residuals` row gives information on the variability **within** genre. 
 
 ---
 
 # Sum of Squares (Between)
 
-The two **sum of squares** (12,679 and 7,491) are based on the values in this table below. 
+The two **sum of squares** (1.4 and 4.019) are based on the values in this table below. 
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("Africa", "Americas", "Asia", "Europe", "TOTAL"), 
-                        Mean.lifeExp = c(54.81, 73.61, 70.73, 77.65, 66.81), 
-                        SD.lifeExp = c(9.63, 4.44, 7.96, 2.98, 12.05), 
-                        n = c(52, 25, 33, 30, 140)), 
+knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+                        Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
+                        SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
+                        n = c(38, 40, 44, 48, 34, 46, 250)), 
              format = "html", align = "c")
 ```
 ]
 
-The sum of squares *between* continents (12,679) is a measure of the variability among the *k* = 4 continents and the overall mean life expectancy (66.81). 
+The sum of squares *between* genres (1.4) is a measure of the variability among the *k* = 6 genres and the overall mean danceability (0.65). 
 
 --
 
-**Some math**: 
 \begin{align*}
-SS_{between}&=52(54.81-66.81)^{2}+25(73.61-66.81)^{2}\\
-&\ \ \ \ +33(70.73-66.81)^{2}+30(77.65-66.81)^{2}\\ 
-&=12,679
+SS_{between}&=38(0.65-0.65)^{2}+40(0.72-0.65)^{2}+44(0.65-0.65)^{2}+48(0.66-0.65)^{2}\\ 
+&\ \ \ \ +34(0.74-0.65)^{2} + 46(0.51-0.65)^{2}\\
+&\approx 1.4
 \end{align*}
 
 ---
 
 # Sum of Squares (Within)
 
-The two **sum of squares** (12,679 and 7,491) are based on the values in this table below. 
+The two **sum of squares** (1.4 and 4.019) are based on the values in this table below. 
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("Africa", "Americas", "Asia", "Europe", "TOTAL"), 
-                        Mean.lifeExp = c(54.81, 73.61, 70.73, 77.65, 66.81), 
-                        SD.lifeExp = c(9.63, 4.44, 7.96, 2.98, 12.05), 
-                        n = c(52, 25, 33, 30, 140)), 
+knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+                        Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
+                        SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
+                        n = c(38, 40, 44, 48, 34, 46, 250)), 
              format = "html", align = "c")
 ```
 ]
 
-The sum of squares *within* continents (7,491) is a composite measure of the variability in the values within each continent. 
+The sum of squares *within* continents (558.4) is a composite measure of the variability in the values within each continent. 
 
 --
 
-**Some math**
-
 \begin{align*}
-SS_{within}&=(52-1)s_{1}^{2}+(25-1)s_{2}^{2}+(33-1)s_{3}^{2}+(30-1)s_{4}^{2}\\
-&=51(9.63)^{2}+24(4.44)^{2}+32(7.96)^{2}+29(2.98)^{2}\\
-&=7,491
+SS_{within}&=(38-1)s_{1}^{2}+(40-1)s_{2}^{2}+(44-1)s_{3}^{2}+(48-1)s_{4}^{2}+(34-1)s_{5}^{2}+(46-1)s_{6}^{2}\\
+&=37(0.12)^{2}+39(0.12)^{2}+43(0.13)^{2}+47(0.13)^{2}+33(0.15)^{2}+45(0.12)^{2}\\
+&\approx 4.019
 \end{align*}
 
 ---
@@ -291,10 +247,8 @@ using the formula for $s_{i}^{2}$.
 
 # Unpacking Sum of Squares
 
-If all of the group means were **identical**: $$\bar{y}_{1}=\bar{y}_{2}=\bar{y}_{3}=\bar{y}_{4}=\bar{y}$$
+If all of the group means were **identical**: $$\bar{y}_{1}=\bar{y}_{2}=\bar{y}_{3}=\bar{y}_{4}=\bar{y}_{5}=\bar{y}_{6}=\bar{y}$$
 then $SS_{between}=0$, implying there is *zero observed variability between group means*.
-
---
 
 If observations within each group were **identical**: $$y_{11}=y_{12}=\cdots=y_{1n_{1}},\qquad y_{21}=y_{22}=\cdots=y_{2n_{2}},\qquad \text{etc.}$$
 then $SS_{within}=0$, implying there is *zero observed variability within groups*. 
@@ -307,9 +261,7 @@ As the group means get *farther apart*, the deviations $(\bar{y}_{i}-\bar{y})$ i
 
 ---
 
-# Unpacking Sum of Squares
-
-From *Navarro, Chapter 14*:
+# Unpacking Sum of Squares (Navarro, Ch. 14)
 
 **Between Groups** variation
 
@@ -318,12 +270,6 @@ From *Navarro, Chapter 14*:
 knitr::include_graphics("var_between.png")
 ```
 ]
-
----
-
-# Unpacking Sum of Squares
-
-From *Navarro, Chapter 14*:
 
 **Within Groups** variation
 
@@ -337,13 +283,13 @@ knitr::include_graphics("var_within.png")
 
 # Unpacking Sum of Squares
 
-We have found out that the *total variability* associated with the response variable (life expectancy, in this example) can be broken down into:
+We have found out that the *total variability* associated with the response variable (danceability, in this example) can be broken down into:
 
 - Sum of the variation due to differences in sample means *between groups*
 
 - Sum of the variation due to differences among observations *within groups*
 
-How does this tell us if the **average** life expectancy is different between continents?!
+How does this tell us if the **average** danceability is different between genres?!
 
 --
 
@@ -356,39 +302,37 @@ If the **null hypothesis** were true, we would expect all of the sample means to
 # Degrees of Freedom
 
 ```{r, echo = FALSE, comment = ""}
-anova.table = aov(lifeExp ~ continent, data = gapminder2007)
-summary(anova.table)
+anova_table = aov(danceability ~ playlist_genre, data = spotify_songs)
+summary(anova_table)
 ```
 
 Associated with each sum of squares is a number of **degrees of freedom** (*df*). 
 
-- For $SS_{between}$ (the `continent` row), $df=\text{number of groups}-1=3$. 
+- For $SS_{between}$ (the `playlist_genre` row), $df=\text{number of groups}-1=5$. 
 
-- For $SS_{within}$ (the `Residuals` row), $df=n-\text{number of groups}=140-4=136$.
+- For $SS_{within}$ (the `Residuals` row), $df=n-\text{number of groups}=250-6=244$.
 
 --
 
 Dividing each of $SS_{between}$ and $SS_{within}$ by their corresponding *df* gives a **mean square**:
 
-- $MS_{between}=12679/3=4226$
+- $MS_{between}=1.4/5=0.28$
 
-- $MS_{within}=7491/136=55$
+- $MS_{within}=4.019/244=0.016$
 
 ---
 
 # Test Statistic
 
-The **test statistic** for a one-way ANOVA is $$F=\frac{MS_{between}}{MS_{within}}=\frac{4226}{55}=76.73$$
-
---
+The **test statistic** for a one-way ANOVA is $$F=\frac{MS_{between}}{MS_{within}}=\frac{0.28}{0.016}=17$$
 
 Under the null hypothesis, the test statistic is said to come from an **F-distribution**, in which the shape depends on the two $df$ values. 
 
-Here is the F-distribution for $df_{1}=3$ and $df_{2}=136$:
+Here is the F-distribution for $df_{1}=5$ and $df_{2}=244$:
 .center[
 ```{r, echo = FALSE, out.width = "35%"}
 ggplot(data.frame(x = c(0, 20)), aes(x = x)) +
-     stat_function(fun = df, args = list(df1 = 3, df2 = 136)) + 
+     stat_function(fun = df, args = list(df1 = 5, df2 = 244)) + 
   #geom_vline(xintercept = 76.73, col = "blue", linetype = "dashed", size = 1) +
   labs(x = "Test Statistic", y = "Density") + 
   theme_bw()
@@ -399,53 +343,24 @@ ggplot(data.frame(x = c(0, 20)), aes(x = x)) +
 
 # Test Statistic
 
-$$F=\frac{MS_{between}}{MS_{within}}=\frac{4226}{55}=76.73$$
+$$F=\frac{MS_{between}}{MS_{within}}=\frac{0.28}{0.016}=17$$
 
 - Think of $MS_{between}$ as a measure of variability *between groups*, and $MS_{within}$ as a measure of variability *within groups*. 
 
 - Under the null hypothesis, the variability between and within groups should be about equal. 
-
-In general the **expected value** of an *F*-distribution is: $$\frac{df_{2}}{df_{2}-2}$$
-- In this example, the *expected value* is $136/(136-2)=1.015$. 
 
 ---
 
 # p-value
 
 ```{r, echo = FALSE, comment = ""}
-anova.table = aov(lifeExp ~ continent, data = gapminder2007)
-summary(anova.table)
+anova_table = aov(danceability ~ playlist_genre, data = spotify_songs)
+summary(anova_table)
 ```
 
 The p-value is given in the ANOVA table, and is evident both by the large value of $F$ and its place in the graph of the *null distribution* on the previous slide. 
 
-We can **reject the null hypothesis** and conclude that *at least one* of the four examined continents has an average life expectancy that is significantly different from the others. 
-
----
-
-# Effect Size
-
-A common (and slightly more *interpretable*) statistic used in ANOVA is called the **effect size** - specifically, $\eta^{2}$ (**eta squared**): $$\eta^{2}=\frac{SS_{between}}{SS_{between}+SS_{within}}$$
-
-In the `gapminder` example, $SS_{within}=12679$ and $SS_{between}+SS_{within}=12679+7491=20170$, so... $$\eta^{2}=\frac{12679}{20170}=0.6286$$
-
---
-
-**Interpretation**: The *proportion of variability* in the response variable (`lifeExp`) that can be explained by the explanatory variable (`continent`). 
-
-- $\eta^{2}=0$ means there is *no relationship* between the two variables. 
-- $\eta^{2}=1$ means that the relationship is *perfect*. 
-
----
-
-# Effect Size
-
-You can add up the $SS_{between}$ and $SS_{within}$ by hand from the `aov()` table to calculate $\eta^{2}$. 
-
-Alternatively, the `etaSquared()` function in the `lsr` package will calculate this for you, as long as you provide the function with your `aov()` table:
-```{r}
-etaSquared(anova.table)
-```
+We can **reject the null hypothesis** and conclude that *at least one* of the six examined genres has an average danceability that is significantly different from the others. 
 
 ---
 
@@ -453,16 +368,14 @@ etaSquared(anova.table)
 
 Condition #3 on a previous slide stated that the variability *across each group* should be about equal. 
 
-- This is questionable based on the side-by-side boxplots we made earlier, but there is a general rule of thumb to check this. 
-
 --
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("Africa", "Americas", "Asia", "Europe"), 
-                        Mean.lifeExp = c(54.81, 73.61, 70.73, 77.65), 
-                        SD.lifeExp = c(9.63, 4.44, 7.96, 2.98), 
-                        n = c(52, 25, 33, 30)), 
+knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+                        Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
+                        SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
+                        n = c(38, 40, 44, 48, 34, 46, 250)), 
              format = "html", align = "c")
 ```
 ]
@@ -475,22 +388,22 @@ Let $S_{max}$ be the largest standard deviation and $S_{min}$ be the smallest. T
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("Africa", "Americas", "Asia", "Europe"), 
-                        Mean.lifeExp = c(54.81, 73.61, 70.73, 77.65), 
-                        SD.lifeExp = c(9.63, 4.44, 7.96, 2.98), 
-                        n = c(52, 25, 33, 30)), 
+knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+                        Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
+                        SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
+                        n = c(38, 40, 44, 48, 34, 46, 250)), 
              format = "html", align = "c")
 ```
 ]
 
-- In this example, $S_{max}/S_{min}=9.73/2.98=3.27$, so this condition might not be valid... 
+- In this example, $S_{max}/S_{min}=0.15/0.12=1.25$, so this should be okay... 
 
 --
 
-What do we do?!
+What what if it wasn't?!
 
 .center[
-```{r, echo = FALSE, out.width = "25%"}
+```{r, echo = FALSE, out.width = "15%"}
 knitr::include_graphics("blush_emoji.png")
 ```
 ]
@@ -522,23 +435,23 @@ knitr::include_graphics("infer_pipeline.png")
 
 # One Permutation
 
-Let's take one permutation from the `gapminder2007` data:
+Let's take one permutation from the `spotify_songs` data:
 
 ```{r, echo = FALSE}
 set.seed(12)
 ```
 
 ```{r, eval = FALSE}
-one.perm = gapminder2007 %>%
-  specify(response = lifeExp, explanatory = continent) %>%
+one_perm = spotify_songs %>%
+  specify(response = danceability, explanatory = playlist_genre) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1, type = "permute")
-View(one.perm)
+View(one_perm)
 ```
 
 ```{r, echo = FALSE}
-one.perm = gapminder2007 %>%
-  specify(response = lifeExp, explanatory = continent) %>%
+one_perm = spotify_songs %>%
+  specify(response = danceability, explanatory = playlist_genre) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1, type = "permute")
 ```
@@ -549,16 +462,15 @@ one.perm = gapminder2007 %>%
 
 .pull-left[
 ```{r, echo = FALSE, comment = ""}
-one.perm
+one_perm
 ```
 ]
 
 .pull-right[
-If the average life expectancy in each continent was equal (i.e., if life expectancy and continent were **independent**)...
+If the average danceability for each genre was equal (i.e., if danceability and genre were **independent**)...
 
-- ...then we might as well *shuffle* the different countries and their life expectancies between continents. 
+- ...then we might as well *shuffle* the different songs and their danceabilities between genres. 
 
-Each `continent`/`lifeExp` pairing in `one.perm` is a random *permutation* from the original data.
 ]
 
 ---
@@ -568,15 +480,13 @@ Each `continent`/`lifeExp` pairing in `one.perm` is a random *permutation* from 
 Now let's calculate the *F* statistic for the *single permutation*:
 
 ```{r, comment = ""}
-one.perm %>%
+one_perm %>%
   calculate(stat = "F")
 ```
 
---
-
 Chances are, your *F* statistic was small. 
 
-- Remember, `one.perm` comes from a world where continent and life expectancy are *independent*. So the *F* statistic should be small!
+- Remember, `one_perm` comes from a world where genre and danceability are *independent*. So the *F* statistic should be small!
 
 ---
 
@@ -589,8 +499,8 @@ set.seed(12)
 ```
 
 ```{r}
-null_distribution_F = gapminder2007 %>%
-  specify(response = lifeExp, explanatory = continent) %>%
+null_distribution_F = spotify_songs %>%
+  specify(response = danceability, explanatory = playlist_genre) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "F")
@@ -610,7 +520,7 @@ visualize(null_distribution_F, method = "both")
 
 ```{r, out.width = "50%"}
 visualize(null_distribution_F) + 
-  shade_p_value(obs_stat = 76.73, direction = "greater") #<<
+  shade_p_value(obs_stat = 17, direction = "greater") #<<
 ```
 
 ---
@@ -620,34 +530,27 @@ visualize(null_distribution_F) +
 Let's use `get_p_value()`:
 
 ```{r, comment = ""}
-gapminder2007 %>% 
-  specify(response = lifeExp, explanatory = continent) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "F")  %>%
-  get_p_value(obs_stat = 76.73, direction = "greater")
+null_distribution_F %>%
+  get_p_value(obs_stat = 17, direction = "greater")
 ```
 
---
 
 Compare this with the P-value obtained using the **theoretical test**:
 
 ```{r, echo = FALSE, comment = ""}
-anova.table = aov(lifeExp ~ continent, data = gapminder2007)
-summary(anova.table)
+anova_table = aov(danceability ~ playlist_genre, data = spotify_songs)
+summary(anova_table)
 ```
 
 ---
 
 # Conclusion
 
-Using a permutation F-test, *we reject the null hypothesis* that the average life expectancies of each continent are equal. 
+Using a permutation F-test, *we reject the null hypothesis* that the average danceability for each genre are equal. 
 
 - We have sufficient evidence to conclude that at least one mean is different. 
 
 You might be asking yourselves something...
-
---
 
 **Which mean is different?!**
 
@@ -667,42 +570,40 @@ If you run an ANOVA with more than two groups and *reject the null hypothesis* (
 
 --
 
-Recall the null hypothesis from the `gapminder` example: $$H_{0}:\mu_{Africa}=\mu_{America}=\mu_{Asia}=\mu_{Europe}$$
+Recall the null hypothesis from the `gapminder` example: $$H_{0}:\mu_{edm}=\mu_{latin}=\mu_{pop}=\mu_{r\&b}=\mu_{rap}=\mu_{rock}$$
 
-In this null hypothesis, we are actually claiming **six** *different things simultaneously*:
-- The average life expectancies of Africa and America are equal. 
-- The average life expectancies of Africa and Asia are equal. 
+In this null hypothesis, we are actually claiming **15** *different things simultaneously*:
+- The average danceability of EDM and Latin songs are equal. 
+- The average danceability of EDM and Pop are equal. 
 - ...and so on!
 
 ---
 
 # Post-ANOVA Analyses
 
-If any of those six claims are false, then we **reject the null**. But which claim(s) are false?
+If any of those 15 claims are false, then we **reject the null**. But which claim(s) are false?
 
-Given that we have six different **pairs of means** to compare, we could just run separate "post-hoc" hypothesis tests for two means!
+Given that we have 15 different **pairs of means** to compare, we could just run separate "post-hoc" hypothesis tests for two means!
 
-- Either six **two-sample t-tests**, or six **permutation tests**
+- Either 15 **two-sample t-tests**, or 15 **permutation tests**
 
 ---
 
 # Running "Pairwise" Tests
 
-Let's compare the average life expectancy of Africa and America, $\mu_{Africa}$ and $\mu_{America}$. 
+Let's compare the average danceability of EDM and Pop, $\mu_{edm}$ and $\mu_{pop}$. 
 
-To do this, we have to take the `gapminder2007` data and `filter()` those two continents:
+To do this, we have to take the `spotify_songs` data and `filter()` those two genres:
 
 ```{r}
-gapminder2007_AfAm = filter(gapminder2007, 
-                            continent %in% c("Africa", "Americas"))
+spotify_edm_pop = spotify_songs %>%
+  filter(playlist_genre %in% c("edm", "pop"))
 ```
-
---
 
 Next, run a two-sample *t*-test:
 
 ```{r, eval = FALSE}
-t.test(lifeExp ~ continent, data = gapminder2007_AfAm)
+t.test(danceability ~ playlist_genre, data = spotify_edm_pop)
 ```
 
 ---
@@ -713,30 +614,30 @@ Or, run a *permutation test*:
 
 ```{r, comment = ""}
 # Sample statistic
-xbar.diff = gapminder2007_AfAm %>%
-  specify(formula = lifeExp ~ continent) %>%
-  calculate(stat = "diff in means", order = c("Africa", "Americas"))
+xbar_diff = spotify_edm_pop %>%
+  specify(response = danceability, explanatory = playlist_genre) %>%
+  calculate(stat = "diff in means", order = c("edm", "pop"))
 ```
 
 ```{r, comment = ""}
 # Hypothesis test
-gapminder2007_AfAm %>%
-  specify(response = lifeExp, explanatory = continent) %>%
+spotify_edm_pop %>%
+  specify(response = danceability, explanatory = playlist_genre) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("Africa", "Americas")) %>%
-  get_p_value(obs_stat = xbar.diff, direction = "both")
+  calculate(stat = "diff in means", order = c("edm", "pop")) %>%
+  get_p_value(obs_stat = xbar_diff, direction = "both")
 ```
 
 ---
 
 # Problems with Many Pairwise Tests
 
-It wouldn't take *much* time to run all six pairwise comparisons to find *which group means* are different. 
+It wouldn't take *too much* time to run all 15 pairwise comparisons to find *which group means* are different. 
 
 However, there are some *problems* with this:
 
-- It is **tedious**. 
+- It is **incredibly tedious**. 
 
     - Imagine if we had **ten** means to compare instead of **six**. That would mean $\binom{10}{2}=45$ pairwise comparisons!
     
@@ -746,7 +647,6 @@ However, there are some *problems* with this:
 
     - p-hacking, like *pie charts*, is **bad**!
 
---
 
 - We set $\alpha$, or the *significance level* to be 0.05 in each test!
 
@@ -792,8 +692,6 @@ The researchers measured **18 different things**: weight, cholesterol, sodium, b
 
 - If you measure many things on a small number of people, you have a very high chance of obtaining a *significant result*!
 
---
-
 Think of each measurement as a "lottery ticket," where "winning" is attaining *statistical significance*. 
 
 For 18 separate "tests", 
@@ -811,10 +709,9 @@ There is a **60% chance** of having a *statistically significant result* (p-valu
 Let's focus a bit more on the *third problem* of conducting many pairwise tests:
 - We set $\alpha$, or the *significance level* to be 0.05 in each test!
 
-We had only six pairwise comparisons. 
+We had 15 pairwise comparisons. 
 - But if we had 45 comparisons, we could *expect* at least to *incorrectly reject a null hypothesis* in at least two or three tests just by chance alone!
-    
---
+  
 
 **A solution?**
 
@@ -829,19 +726,10 @@ There are many methods to correct for multiple comparisons, but we will use **Tu
 # Tukey's HSD
 
 ```{r, comment = ""}
-anova_table = aov(lifeExp ~ continent, data = gapminder2007)
+anova_table = aov(danceability ~ playlist_genre, data = spotify_songs)
 TukeyHSD(anova_table)
 ```
 
-- To find the pairs of means that are *significantly different* find the confidence intervals that do not contain the *null value* of 0, or p-values $<0.05$.
-
----
-
-# Tukey's HSD
-
-```{r, out.width = "50%"}
-plot(TukeyHSD(anova.table))
-```
 
 ---
 
@@ -849,9 +737,8 @@ plot(TukeyHSD(anova.table))
 
 When using a correction for multiple comparisons, the 5% level of significance and the confidence level (95%) apply to the **family consisting of all pairwise comparisons**. 
 
-In this example, the **family level of significance**, $\alpha=0.05$, is defined as: $$P(\text{at least one Type I Error in the six tests})=0.05$$
+In this example, the **family level of significance**, $\alpha=0.05$, is defined as: $$P(\text{at least one Type I Error in the 15 tests})=0.05$$
 
---
 
 **Note**: Tukey's HSD, and all **post-hoc tests**, should be performed *after* a significant F-test.
 
