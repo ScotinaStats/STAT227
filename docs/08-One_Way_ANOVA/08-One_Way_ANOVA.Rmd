@@ -187,7 +187,7 @@ The two **sum of squares** (1.4 and 4.019) are based on the values in this table
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+knitr::kable(data.frame(Genre = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
                         Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
                         SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
                         n = c(38, 40, 44, 48, 34, 46, 250)), 
@@ -213,7 +213,7 @@ The two **sum of squares** (1.4 and 4.019) are based on the values in this table
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+knitr::kable(data.frame(Genre = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
                         Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
                         SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
                         n = c(38, 40, 44, 48, 34, 46, 250)), 
@@ -221,7 +221,7 @@ knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock
 ```
 ]
 
-The sum of squares *within* continents (558.4) is a composite measure of the variability in the values within each continent. 
+The sum of squares *within* genres (4.019) is a composite measure of the variability in the values within each genre. 
 
 --
 
@@ -372,7 +372,7 @@ Condition #3 on a previous slide stated that the variability *across each group*
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+knitr::kable(data.frame(Genre = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
                         Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
                         SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
                         n = c(38, 40, 44, 48, 34, 46, 250)), 
@@ -388,7 +388,7 @@ Let $S_{max}$ be the largest standard deviation and $S_{min}$ be the smallest. T
 
 .center[
 ```{r, echo = FALSE}
-knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
+knitr::kable(data.frame(Genre = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock", "TOTAL"), 
                         Mean.dance = c(0.65, 0.72, 0.65, 0.66, 0.74, 0.51, 0.65), 
                         SD.dance = c(0.12, 0.12, 0.13, 0.13, 0.15, 0.12, 0.15), 
                         n = c(38, 40, 44, 48, 34, 46, 250)), 
@@ -400,7 +400,7 @@ knitr::kable(data.frame(Continent = c("EDM", "Latin", "Pop", "R&B", "Rap", "Rock
 
 --
 
-What what if it wasn't?!
+But what if it wasn't?!
 
 .center[
 ```{r, echo = FALSE, out.width = "15%"}
