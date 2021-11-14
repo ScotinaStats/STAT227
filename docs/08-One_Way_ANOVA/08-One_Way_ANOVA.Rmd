@@ -742,11 +742,30 @@ In this example, the **family level of significance**, $\alpha=0.05$, is defined
 
 **Note**: Tukey's HSD, and all **post-hoc tests**, should be performed *after* a significant F-test.
 
+---
 
+# Practice
 
+**Question**: Is there an association between the `carrier` and *departure delay* (`dep_delay`) in flights leaving from NYC? Let's use an ANOVA to find out!
 
+```{r}
+library(nycflights13)
 
+set.seed(227)
+flights_sample = flights %>%
+  filter(carrier %in% c("9E", "AA", "B6", "DL", "EV", 
+                        "FL", "MQ", "UA", "US", "VX", "WN")) %>%
+  slice_sample(n = 2000)
+```
 
+1. Perform EDA (i.e., construct a **table of descriptive stats** and *appropriate visualizations*).
+
+2. Perform the **one-way ANOVA**. 
+    - State the test statistic, p-value, and conclusion. 
+    
+3. Perform **post-hoc tests** (if necessary). 
+
+🚨Were the conditions met?🚨
 
 
 
