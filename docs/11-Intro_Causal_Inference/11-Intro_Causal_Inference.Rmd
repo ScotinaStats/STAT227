@@ -37,6 +37,18 @@ knitr::opts_chunk$set(
 pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH228-Introduction to Data Science/Lecture Slides/01-Introduction/01-Introduction.html")
 -->
 
+class: center, middle, frame
+
+# The Causal Revolution
+
+.center[
+```{r, echo = FALSE, dpi = 200}
+knitr::include_graphics("meme.jpg")
+```
+]
+
+---
+
 # What is causal inference?
 
 **Infer**ring **causal** effects of any *treatment*/*policy*/*intervention* (etc.)
@@ -713,6 +725,28 @@ If study participants are **randomized** into treatment groups, selection bias i
 
 ---
 
+# The Causal Revolution
+
+.left-column[
+```{r, echo = FALSE}
+knitr::include_graphics("book_of_why.jpg")
+```
+]
+
+.right-column[
+```{r, echo = FALSE}
+knitr::include_graphics("pearl.jpg")
+```
+]
+
+--
+
+(Pearl et al., 2016): *X* is a cause of *Y* if *Y* **listens to** *X* and decides its value in response to what it hears. 
+
+- But what if *Y* listens to more than just *X*?
+
+---
+
 # Back to the "REAL" Data
 
 .pull-left-small[
@@ -825,110 +859,6 @@ $\widehat{Outcome}=8.27+0.417(\text{STAT228})-1.08(\text{STAT227})$
 
 class: center, middle, frame
 
-# Some Assumptions
-
----
-
-# Correlation is not causation!
-
-.center[
-```{r, echo = FALSE, dpi = 200}
-knitr::include_graphics("meme.jpg")
-```
-]
-
-.center[
-### Except when it is
-]
-
-> What assumptions would make the average treatment effect (ATE) EQUAL to the associative difference?
-
----
-
-# Exchangeability
-
-Also called: .display1[Unconfoundedness], .display2[Ignorability], or .display3[Independence]
-
-$$ \Large [Y(1), Y(0)] \perp T$$
-
-*What does this mean?!* 🤔🤔🤔
-
-> The treatment has been assigned to individuals *independent* of their potential outcomes. Treatment assignment has **nothing to do** with potential benefits of the treatment. 
-
---
-
-Is your decision to take a class *independent* of any *potential benefits* of the class?
-
-- Probably not...
-
---
-
-**IF** $[Y(1), Y(0)] \perp T$: 
-
-$$E[Y(1)\mid T = 1] = E[Y(1)\mid T = 0] = E[Y(1)]$$
-
-In this case, **potential outcomes** and **treatment assignment** are independent!
-
-- But *usually*, we can't just take a simple **difference in means** and call it causal!!!
-
----
-
-# Exchangeability
-
-.center[
-```{r, echo = FALSE, dpi = 250}
-knitr::include_graphics("exchangeable1.png")
-```
-]
-
----
-
-# Exchangeability
-
-.center[
-```{r, echo = FALSE, dpi = 250}
-knitr::include_graphics("exchangeable2.png")
-```
-]
-
---
-
-.display2[What this means] 👇
-
-- $E[Y(1)\mid T = 1] = E[Y(1)\mid T = 0] = E[Y(1)]$
-
-- $E[Y(0)\mid T = 0] = E[Y(0)\mid T = 1] = E[Y(0)]$
-
-.display1[What this means] 👇
-
-- Group A's **potential outcomes** for **T = 1** are *equal* to Group B's **potential outcomes** for **T = 1** (on average). 
-
-- Group B's **potential outcomes** for **T = 0** are *equal* to Group A's **potential outcomes** for **T = 0** (on average). 
-
----
-
-# Conditional Exchangeability
-
-In many studies (e.g., .display1[observational studies]), **exchangeability** does not hold. 
-
-- There is *usually* some reason for treatment selection that could **also** impact the outcome. 
-
-- **Example**: .display2[Taking STAT 227] might be a **common cause** of...
-    - **taking STAT 228**
-    - an *increase* (😐 hopefully 😐) in **love of statistics**
-
---
-
-By **controlling** for these common causes (e.g., holding constant in a regression model), we can hope to achieve .display1[conditional exchangeability]: $$ \Large [Y(1), Y(0)] \perp T\mid X$$
-
-> Treatment assignment has **nothing to do** with potential benefits of the treatment, **within levels of the measured variables**.
-
-- Also known as the **no unmeasured confounding** assumption!
-
----
-
-class: center, middle, frame
-
 # Matching on Covariates
 
 ---
@@ -942,9 +872,8 @@ knitr::include_graphics("rct.png")
 ]
 
 .pull-right[
-.display1[The potential outcomes are **exchangeable**!]
+.display1[The treatment and control groups are **balanced**!]
 
-$$[Y(1),Y(0)]\perp T$$
 Though RCTs can be .display2[infeasible] for a number of reasons. 
 
 - .display3[Money] 🤑🤑🤑
@@ -1336,8 +1265,6 @@ Remember, the *treated* individuals still have only one **observed** outcome!.
 
 By matching on the *confounder* `age`, we have achieved **exact** *covariate balance* on `age`. 
 
-- Conditional on `age`, the two groups are **exchangeable**: $$[Y(1), Y(0)]\perp T\mid X$$
-
 ---
 
 # More than one match
@@ -1654,4 +1581,13 @@ model_matched_data = lm(score ~ r_workshop, data = matched_data)
 tidy(model_matched_data)
 ```
 
+---
+
+# References/Further Reading
+
+1. Andrew Heiss's Program Evaluation course: [https://evalsp21.classes.andrewheiss.com/](https://evalsp21.classes.andrewheiss.com/)
+
+2. Brady Neal's Introduction to Causal Inference course: [https://www.bradyneal.com/causal-inference-course](https://www.bradyneal.com/causal-inference-course)
+
+3. Causal Inference: The Mixtape, by Scott Cunningham: [https://mixtape.scunning.com/](https://mixtape.scunning.com/)
 

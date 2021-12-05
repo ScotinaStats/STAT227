@@ -4,7 +4,7 @@
     <title>STAT 227: Statistical Design and Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Anthony Scotina" />
-    <script src="libs/header-attrs-2.6/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <script src="libs/core-js-2.5.3/shim.min.js"></script>
     <script src="libs/react-16.12.0/react.min.js"></script>
     <script src="libs/react-16.12.0/react-dom.min.js"></script>
@@ -35,6 +35,16 @@ class: center, middle, inverse, title-slide
 pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH228-Introduction to Data Science/Lecture Slides/01-Introduction/01-Introduction.html")
 --&gt;
 
+class: center, middle, frame
+
+# The Causal Revolution
+
+.center[
+&lt;img src="meme.jpg" width="326" /&gt;
+]
+
+---
+
 # What is causal inference?
 
 **Infer**ring **causal** effects of any *treatment*/*policy*/*intervention* (etc.)
@@ -42,7 +52,7 @@ pagedown::chrome_print("~/Dropbox/Teaching/03-Simmons Courses/MATH228-Introducti
 --
 
 .center[
-&lt;img src="11-Intro_Causal_Inference_files/figure-html/unnamed-chunk-3-1.png" width="100%" /&gt;
+&lt;img src="11-Intro_Causal_Inference_files/figure-html/unnamed-chunk-4-1.png" width="100%" /&gt;
 ]
 
 --
@@ -3276,6 +3286,24 @@ If study participants are **randomized** into treatment groups, selection bias i
 
 ---
 
+# The Causal Revolution
+
+.left-column[
+&lt;img src="book_of_why.jpg" width="444" /&gt;
+]
+
+.right-column[
+&lt;img src="pearl.jpg" width="960" /&gt;
+]
+
+--
+
+(Pearl et al., 2016): *X* is a cause of *Y* if *Y* **listens to** *X* and decides its value in response to what it hears. 
+
+- But what if *Y* listens to more than just *X*?
+
+---
+
 # Back to the "REAL" Data
 
 .pull-left-small[
@@ -4140,7 +4168,7 @@ tidy(stat228_model)
 ```
 
 ```
-## # A tibble: 3 x 5
+## # A tibble: 3 × 5
 ##   term        estimate std.error statistic   p.value
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
 ## 1 (Intercept)    8.27      0.636    13.0   0.0000478
@@ -4162,104 +4190,6 @@ tidy(stat228_model)
 
 class: center, middle, frame
 
-# Some Assumptions
-
----
-
-# Correlation is not causation!
-
-.center[
-&lt;img src="meme.jpg" width="326" /&gt;
-]
-
-.center[
-### Except when it is
-]
-
-&gt; What assumptions would make the average treatment effect (ATE) EQUAL to the associative difference?
-
----
-
-# Exchangeability
-
-Also called: .display1[Unconfoundedness], .display2[Ignorability], or .display3[Independence]
-
-$$ \Large [Y(1), Y(0)] \perp T$$
-
-*What does this mean?!* 🤔🤔🤔
-
-&gt; The treatment has been assigned to individuals *independent* of their potential outcomes. Treatment assignment has **nothing to do** with potential benefits of the treatment. 
-
---
-
-Is your decision to take a class *independent* of any *potential benefits* of the class?
-
-- Probably not...
-
---
-
-**IF** `\([Y(1), Y(0)] \perp T\)`: 
-
-`$$E[Y(1)\mid T = 1] = E[Y(1)\mid T = 0] = E[Y(1)]$$`
-
-In this case, **potential outcomes** and **treatment assignment** are independent!
-
-- But *usually*, we can't just take a simple **difference in means** and call it causal!!!
-
----
-
-# Exchangeability
-
-.center[
-&lt;img src="exchangeable1.png" width="289" /&gt;
-]
-
----
-
-# Exchangeability
-
-.center[
-&lt;img src="exchangeable2.png" width="289" /&gt;
-]
-
---
-
-.display2[What this means] 👇
-
-- `\(E[Y(1)\mid T = 1] = E[Y(1)\mid T = 0] = E[Y(1)]\)`
-
-- `\(E[Y(0)\mid T = 0] = E[Y(0)\mid T = 1] = E[Y(0)]\)`
-
-.display1[What this means] 👇
-
-- Group A's **potential outcomes** for **T = 1** are *equal* to Group B's **potential outcomes** for **T = 1** (on average). 
-
-- Group B's **potential outcomes** for **T = 0** are *equal* to Group A's **potential outcomes** for **T = 0** (on average). 
-
----
-
-# Conditional Exchangeability
-
-In many studies (e.g., .display1[observational studies]), **exchangeability** does not hold. 
-
-- There is *usually* some reason for treatment selection that could **also** impact the outcome. 
-
-- **Example**: .display2[Taking STAT 227] might be a **common cause** of...
-    - **taking STAT 228**
-    - an *increase* (😐 hopefully 😐) in **love of statistics**
-
---
-
-By **controlling** for these common causes (e.g., holding constant in a regression model), we can hope to achieve .display1[conditional exchangeability]: $$ \Large [Y(1), Y(0)] \perp T\mid X$$
-
-&gt; Treatment assignment has **nothing to do** with potential benefits of the treatment, **within levels of the measured variables**.
-
-- Also known as the **no unmeasured confounding** assumption!
-
----
-
-class: center, middle, frame
-
 # Matching on Covariates
 
 ---
@@ -4271,9 +4201,8 @@ class: center, middle, frame
 ]
 
 .pull-right[
-.display1[The potential outcomes are **exchangeable**!]
+.display1[The treatment and control groups are **balanced**!]
 
-`$$[Y(1),Y(0)]\perp T$$`
 Though RCTs can be .display2[infeasible] for a number of reasons. 
 
 - .display3[Money] 🤑🤑🤑
@@ -5203,7 +5132,7 @@ fake_scores %&gt;%
 ```
 
 ```
-## # A tibble: 2 x 2
+## # A tibble: 2 × 2
 ##   Group     mean_score
 ##   &lt;chr&gt;          &lt;dbl&gt;
 ## 1 Control         89.0
@@ -5243,7 +5172,7 @@ fake_scores %&gt;%
 ```
 
 ```
-## # A tibble: 2 x 2
+## # A tibble: 2 × 2
 ##   Group     mean_age
 ##   &lt;chr&gt;        &lt;dbl&gt;
 ## 1 Control       30.3
@@ -6606,8 +6535,6 @@ Remember, the *treated* individuals still have only one **observed** outcome!.
 --
 
 By matching on the *confounder* `age`, we have achieved **exact** *covariate balance* on `age`. 
-
-- Conditional on `age`, the two groups are **exchangeable**: `$$[Y(1), Y(0)]\perp T\mid X$$`
 
 ---
 
@@ -8956,13 +8883,22 @@ tidy(model_matched_data)
 ```
 
 ```
-## # A tibble: 2 x 5
+## # A tibble: 2 × 5
 ##   term        estimate std.error statistic   p.value
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
 ## 1 (Intercept)    82.6      0.198     416.  0        
 ## 2 r_workshop      8.52     0.244      34.9 2.05e-159
 ```
 
+---
+
+# References/Further Reading
+
+1. Andrew Heiss's Program Evaluation course: [https://evalsp21.classes.andrewheiss.com/](https://evalsp21.classes.andrewheiss.com/)
+
+2. Brady Neal's Introduction to Causal Inference course: [https://www.bradyneal.com/causal-inference-course](https://www.bradyneal.com/causal-inference-course)
+
+3. Causal Inference: The Mixtape, by Scott Cunningham: [https://mixtape.scunning.com/](https://mixtape.scunning.com/)
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
